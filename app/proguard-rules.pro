@@ -1,0 +1,1 @@
+# TD-Coins does not require custom R8 rules yet.

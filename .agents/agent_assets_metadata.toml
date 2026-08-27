@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "QouWSywFpVQkYPtTIiuEG"
+uri = "file://app/build/outputs/apk/debug/app-debug.apk"
+type = "unspecified"
+title = "TD-Coins Android APK"
+description = "APK de depuración generado desde el proyecto Kotlin + Jetpack Compose."
+logical_id = "d33c56a8-a58b-48b4-897c-c7b39de22106"
+content_hash = "sha256:4e530b7aa1103799e567f3cb7d91caf794e31a0572037d5651c45f4a4a629406"
+size = 27740864
+mtime_ms = 1787865538678
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:49ba58f8-cde3-4752-a8c4-420b436882d4/d33c56a8-a58b-48b4-897c-c7b39de22106/4384fc5e-9f5b-405f-bee7-d40227d39075"
+storage_version_token = "1787865615811858"
+content_type = "application/octet-stream"
