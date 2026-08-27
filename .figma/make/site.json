@@ -1,0 +1,10 @@
+{
+  "description": "Designed for individuals with ADHD, this app offers personalized action plans, Pomodoro timers, and rewards for task completion through TD-Coins redeemable for merchandise.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
