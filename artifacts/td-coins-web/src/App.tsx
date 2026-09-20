@@ -43,7 +43,7 @@ function DownloadLink({
       data-testid={testId}
       href={downloadPath}
       download="td-coins.apk"
-      aria-label="Descargar TD-Coins para Android"
+      aria-label="Descargar TD-App para Android"
     >
       {children}
     </a>
@@ -54,9 +54,9 @@ function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    document.title = 'TD-Coins | Un paso a la vez';
+    document.title = 'TD-App | Un paso a la vez';
     const description =
-      'TD-Coins convierte tus pequeños avances en monedas para ayudarte a empezar, enfocarte y celebrar.';
+      'TD-App convierte tus pequeños avances en monedas para ayudarte a empezar, enfocarte y celebrar.';
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -75,10 +75,10 @@ function Home() {
         <a className="td-brand" href="#inicio" data-testid="link-brand">
           <img
             src="/assets/td-coins-logo.png"
-            alt="Logo de TD-Coins"
+            alt="Logo de TD-App"
             data-testid="img-brand-logo"
           />
-          <span>TD-Coins</span>
+          <span>TD-App</span>
         </a>
 
         <nav className="td-nav-links" aria-label="Navegación principal">
@@ -137,13 +137,13 @@ function Home() {
             Hazlo <em>posible.</em>
           </h1>
           <p className="td-hero-copy">
-            TD-Coins es el compañero Android que convierte tus momentos de enfoque,
+            TD-App es el compañero Android que convierte tus momentos de enfoque,
             misiones y hábitos en avances que puedes ver y celebrar.
           </p>
           <div className="td-hero-actions">
             <DownloadLink testId="link-hero-download">
               <Download size={19} />
-              Descargar TD-Coins
+              Descargar TD-App
               <ArrowRight size={17} />
             </DownloadLink>
             <a
@@ -164,12 +164,12 @@ function Home() {
           </div>
         </div>
 
-        <div className="td-hero-art td-reveal td-delay-2" aria-label="Identidad visual de TD-Coins">
+        <div className="td-hero-art td-reveal td-delay-2" aria-label="Identidad visual de TD-App">
           <div className="td-coin-orbit">
             <img
               className="td-hero-logo"
               src="/assets/td-coins-logo.png"
-              alt="Identidad de TD-Coins"
+              alt="Identidad de TD-App"
               data-testid="img-hero-logo"
             />
           </div>
@@ -284,28 +284,28 @@ function Home() {
                 Pelota antiestrés
                 <small>Para volver al presente</small>
               </span>
-              <img src="/assets/pelota.png" alt="Pelota antiestrés morada de TD-Coins" />
+              <img src="/assets/pelota.png" alt="Pelota antiestrés morada de TD-App" />
             </article>
             <article className="td-reward-card" data-testid="card-reward-keychain">
               <span className="td-reward-label">
                 Llavero
                 <small>Un paso a la vez</small>
               </span>
-              <img src="/assets/llavero.png" alt="Llavero morado de TD-Coins" />
+              <img src="/assets/llavero.png" alt="Llavero morado de TD-App" />
             </article>
             <article className="td-reward-card" data-testid="card-reward-mug">
               <span className="td-reward-label">
                 Taza
                 <small>Tu pausa también cuenta</small>
               </span>
-              <img src="/assets/taza.png" alt="Taza de TD-Coins" />
+              <img src="/assets/taza.png" alt="Taza de TD-App" />
             </article>
             <article className="td-reward-card" data-testid="card-reward-backpack">
               <span className="td-reward-label">
                 Mochila
                 <small>Para lo que viene</small>
               </span>
-              <img src="/assets/mochila.png" alt="Mochila lila de TD-Coins" />
+              <img src="/assets/mochila.png" alt="Mochila lila de TD-App" />
             </article>
           </div>
         </div>
@@ -318,7 +318,7 @@ function Home() {
               <div className="td-section-label">Listo para empezar</div>
               <h2 className="td-display">El siguiente paso está aquí.</h2>
               <p>
-                Descarga el APK oficial de TD-Coins para Android y empieza con una
+                Descarga el APK oficial de TD-App para Android y empieza con una
                 misión pequeña. La versión inicial está pensada para acompañarte
                 sin saturarte.
               </p>
@@ -329,7 +329,7 @@ function Home() {
                 testId="link-final-download"
               >
                 <Download size={22} />
-                Descargar TD-Coins.apk
+                Descargar TD-App.apk
               </DownloadLink>
               <div className="td-download-meta">
                 <span>Android · APK</span>
@@ -351,7 +351,7 @@ function Home() {
         <div className="td-container td-footer-row">
           <a className="td-brand" href="#inicio" data-testid="link-footer-brand">
             <img src="/assets/td-coins-logo.png" alt="" aria-hidden="true" />
-            <span>TD-Coins</span>
+            <span>TD-App</span>
           </a>
           <p data-testid="text-footer-copy">Pequeñas victorias. Un paso a la vez.</p>
           <div className="td-footer-links">
