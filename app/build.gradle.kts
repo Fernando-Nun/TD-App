@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 6
-        versionName = "1.5"
+        versionName = "1.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val syncApiUrl = providers.environmentVariable("SYNC_API_URL")
             .getOrElse("https://td-app.replit.app")
