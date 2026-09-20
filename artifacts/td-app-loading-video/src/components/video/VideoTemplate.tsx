@@ -4,17 +4,9 @@ import {
   type VideoAspectRatio,
   useVideoPlayer,
 } from '@/lib/video';
-import { AnimatePresence } from 'framer-motion';
-
 import { TDAppLoadingScene } from './TDAppLoadingScene';
 
-const SCENE_DURATIONS = {
-  focus: 3200,
-  progress: 3600,
-  coins: 3200,
-  momentum: 3600,
-  ready: 3000,
-};
+const SCENE_DURATIONS = { loading: 5000 };
 
 const VIDEO_ASPECT_RATIO: VideoAspectRatio = '9:16';
 

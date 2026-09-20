@@ -15,13 +15,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -33,9 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -77,7 +72,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun LoadingSplash(onFinished: () -> Unit) {
     LaunchedEffect(Unit) {
-        delay(1800)
+        delay(5000)
         onFinished()
     }
     val transition = rememberInfiniteTransition(label = "td-loading")
@@ -85,7 +80,7 @@ private fun LoadingSplash(onFinished: () -> Unit) {
         initialValue = 0.92f,
         targetValue = 1.04f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation = tween(1600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse,
         ),
         label = "logo-scale",
@@ -94,10 +89,19 @@ private fun LoadingSplash(onFinished: () -> Unit) {
         initialValue = 0.14f,
         targetValue = 0.34f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation = tween(1600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse,
         ),
         label = "glow-alpha",
+    )
+    val glowScale by transition.animateFloat(
+        initialValue = 0.86f,
+        targetValue = 1.12f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "glow-scale",
     )
 
     Box(
@@ -113,41 +117,27 @@ private fun LoadingSplash(onFinished: () -> Unit) {
         Box(
             modifier = Modifier
                 .size(210.dp)
+                .scale(glowScale)
                 .background(Color(0xFF7C3AED).copy(alpha = glowAlpha), CircleShape),
         )
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Image(
-                painter = painterResource(R.drawable.logo),
-                contentDescription = "Logo TD-App",
-                modifier = Modifier
-                    .size(132.dp)
-                    .scale(logoScale),
-                contentScale = ContentScale.Fit,
-            )
-            Spacer(modifier = Modifier.height(22.dp))
-            Text(
-                "TD-App",
-                color = Color(0xFF28164F),
-                fontSize = 27.sp,
-                fontWeight = FontWeight.Black,
-            )
-            Text(
-                "Enfoque que sí avanza",
-                color = Color(0xFF695B82),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-            )
-            Spacer(modifier = Modifier.height(25.dp))
-            LoadingDots()
-        }
+        Image(
+            painter = painterResource(R.drawable.logo),
+            contentDescription = "Logo TD-App",
+            modifier = Modifier
+                .size(132.dp)
+                .scale(logoScale),
+            contentScale = ContentScale.Fit,
+        )
+        LoadingDots(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 72.dp),
+        )
     }
 }
 
 @Composable
-private fun LoadingDots() {
+private fun LoadingDots(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "loading-dots")
     val offset by transition.animateFloat(
         initialValue = 0f,
@@ -159,6 +149,7 @@ private fun LoadingDots() {
         label = "dots-offset",
     )
     androidx.compose.foundation.layout.Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
