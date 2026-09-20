@@ -21,6 +21,23 @@ export function TDAppLoadingScene(_props: SceneProps) {
 }
 
 function LoadingAtmosphere() {
+  const convergingElements = [
+    { x: 4, y: 17, targetX: 47, targetY: 33, rotate: 22, size: 'w-[1.2vmin] h-[4.4vmin]', color: 'violet' },
+    { x: 92, y: 11, targetX: -42, targetY: 37, rotate: -34, size: 'w-[1vmin] h-[3.8vmin]', color: 'teal' },
+    { x: 12, y: 74, targetX: 38, targetY: -26, rotate: -42, size: 'w-[1.4vmin] h-[1.4vmin]', color: 'teal' },
+    { x: 88, y: 81, targetX: -38, targetY: -29, rotate: 38, size: 'w-[1.2vmin] h-[1.2vmin]', color: 'violet' },
+    { x: 21, y: 4, targetX: 28, targetY: 43, rotate: 12, size: 'w-[0.9vmin] h-[2.8vmin]', color: 'violet' },
+    { x: 78, y: 3, targetX: -28, targetY: 45, rotate: -16, size: 'w-[0.9vmin] h-[2.8vmin]', color: 'teal' },
+    { x: 3, y: 44, targetX: 45, targetY: 3, rotate: 90, size: 'w-[1vmin] h-[3.2vmin]', color: 'teal' },
+    { x: 97, y: 52, targetX: -45, targetY: -5, rotate: 90, size: 'w-[1vmin] h-[3.2vmin]', color: 'violet' },
+    { x: 31, y: 94, targetX: 18, targetY: -44, rotate: -24, size: 'w-[1.1vmin] h-[3.4vmin]', color: 'violet' },
+    { x: 67, y: 96, targetX: -18, targetY: -45, rotate: 24, size: 'w-[1.1vmin] h-[3.4vmin]', color: 'teal' },
+    { x: 9, y: 28, targetX: 40, targetY: 22, rotate: 58, size: 'w-[0.85vmin] h-[0.85vmin]', color: 'teal' },
+    { x: 91, y: 30, targetX: -40, targetY: 20, rotate: -58, size: 'w-[0.85vmin] h-[0.85vmin]', color: 'violet' },
+    { x: 18, y: 88, targetX: 33, targetY: -36, rotate: 18, size: 'w-[0.8vmin] h-[2.5vmin]', color: 'teal' },
+    { x: 83, y: 89, targetX: -33, targetY: -37, rotate: -18, size: 'w-[0.8vmin] h-[2.5vmin]', color: 'violet' },
+  ];
+
   return (
     <>
       <motion.div
@@ -56,6 +73,31 @@ function LoadingAtmosphere() {
         animate={{ rotate: -360 }}
         transition={{ duration: 11, repeat: Infinity, ease: 'linear' }}
       />
+      <div aria-hidden="true" className="absolute inset-0">
+        {convergingElements.map((element, index) => (
+          <motion.span
+            className={`td-converging-element ${element.size} td-converging-${element.color} absolute rounded-full`}
+            key={`${element.x}-${element.y}`}
+            style={{ left: `${element.x}%`, top: `${element.y}%` }}
+            animate={{
+              x: ['0vw', `${element.targetX}vw`, `${element.targetX}vw`, '0vw'],
+              y: ['0vh', `${element.targetY}vh`, `${element.targetY}vh`, '0vh'],
+              opacity: [0, 0.35, 0.82, 0],
+              scale: [0.55, 0.9, 1, 0.45],
+              rotate: [element.rotate - 18, element.rotate, element.rotate + 10, element.rotate + 26],
+            }}
+            transition={{
+              duration: 5,
+              delay: index * 0.055,
+              repeat: Infinity,
+              ease: [0.22, 0.8, 0.26, 1],
+              times: [0, 0.58, 0.76, 1],
+            }}
+          />
+        ))}
+      </div>
+      <div aria-hidden="true" className="td-edge-mark td-edge-mark-top absolute left-[11%] top-[18%] h-[11vmin] w-[11vmin]" />
+      <div aria-hidden="true" className="td-edge-mark td-edge-mark-bottom absolute bottom-[16%] right-[10%] h-[9vmin] w-[9vmin]" />
       <div aria-hidden="true" className="td-grain" />
     </>
   );
@@ -65,20 +107,41 @@ function LoadingCore() {
   return (
     <main className="absolute inset-0 flex flex-col items-center justify-center">
       <motion.div
-        className="relative flex h-[42vmin] w-[42vmin] items-center justify-center"
-        animate={{ scale: [0.985, 1.02, 0.985] }}
-        transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
+        className="td-logo-stage relative flex h-[44vmin] w-[44vmin] items-center justify-center"
+        animate={{ scale: [0.96, 0.98, 1.02, 0.98, 0.96] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.42, 0.72, 0.86, 1] }}
       >
         <motion.div
           aria-hidden="true"
-          className="td-loading-halo absolute inset-[-4vmin] rounded-full"
-          animate={{ scale: [0.9, 1.1, 0.9], opacity: [0.45, 0.16, 0.45] }}
-          transition={{ duration: 3.1, repeat: Infinity, ease: 'easeInOut' }}
+          className="td-loading-halo absolute inset-[-3vmin] rounded-full"
+          animate={{ scale: [0.9, 0.96, 1.12, 1.03, 0.9], opacity: [0.16, 0.22, 0.7, 0.18, 0.16] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.42, 0.72, 0.84, 1] }}
+        />
+        <motion.div
+          aria-hidden="true"
+          className="td-logo-sketch absolute inset-0 z-[1]"
+          animate={{ opacity: [0.42, 0.58, 0.22, 0.08, 0.42], scale: [0.98, 1, 1.01, 1.01, 0.98] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.42, 0.72, 0.86, 1] }}
+        >
+          <img alt="" className="h-full w-full object-contain" src={LOGO_SRC} />
+        </motion.div>
+        <motion.div
+          aria-hidden="true"
+          className="td-logo-trace absolute inset-[-1.2vmin] z-[2] rounded-full"
+          animate={{ opacity: [0.4, 0.62, 0.1, 0.08, 0.4], rotate: [0, 4, 0, -3, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.42, 0.72, 0.86, 1] }}
         />
         <img
           alt="TD-App"
-          className="relative z-10 h-full w-full object-contain drop-shadow-[0_2.5vmin_4vmin_rgba(58,36,112,.16)]"
+          className="td-logo-final relative z-10 h-full w-full object-contain"
           src={LOGO_SRC}
+          style={{ animation: 'td-logo-reveal 5s cubic-bezier(.22,.8,.26,1) infinite' }}
+        />
+        <motion.div
+          aria-hidden="true"
+          className="td-logo-highlight pointer-events-none absolute inset-[-2vmin] z-20 rounded-full"
+          animate={{ opacity: [0, 0, 0.9, 0, 0], scale: [0.82, 0.94, 1.12, 1.2, 0.82] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeOut', times: [0, 0.56, 0.72, 0.84, 1] }}
         />
       </motion.div>
       <motion.div
