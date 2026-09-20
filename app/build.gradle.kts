@@ -12,12 +12,11 @@ android {
         applicationId = "com.tdcoins.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val syncApiUrl = providers.environmentVariable("SYNC_API_URL")
-            .orElse(providers.environmentVariable("REPLIT_DEV_DOMAIN").map { "https://$it" })
-            .getOrElse("")
+            .getOrElse("https://td-app.replit.app")
         buildConfigField("String", "SYNC_API_URL", "\"$syncApiUrl\"")
     }
 
