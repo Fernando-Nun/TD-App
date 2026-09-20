@@ -42,3 +42,22 @@ test("adds independent pomodoros completed offline on two devices", () => {
   assert.equal(merged.pomodorosDone, 6);
   assert.equal(merged.coins, 65);
 });
+
+test("keeps deleted and legacy missions out of merged snapshots", () => {
+  const merged = mergeSnapshots(
+    { missions: [{ id: "t1" }, { id: "mine", progress: 1 }], deletedMissionIds: ["mine"] },
+    { missions: [{ id: "t2" }, { id: "mine", progress: 4 }], deletedMissionIds: ["mine"] },
+  );
+  assert.deepEqual(merged.missions, []);
+  assert.ok(merged.deletedMissionIds.includes("t1"));
+  assert.ok(merged.deletedMissionIds.includes("mine"));
+});
+
+test("syncs user challenges and honors challenge tombstones", () => {
+  const merged = mergeSnapshots(
+    { challenges: [{ id: "sleep", updatedAt: 1, text: "Dormir" }], deletedChallengeIds: ["focus"] },
+    { challenges: [{ id: "focus", updatedAt: 2, text: "Enfocarme" }, { id: "sleep", updatedAt: 3, text: "Dormir mejor" }] },
+  );
+  assert.deepEqual(merged.challenges.map((challenge) => challenge.text), ["Dormir mejor"]);
+  assert.deepEqual(merged.deletedChallengeIds, ["focus"]);
+});

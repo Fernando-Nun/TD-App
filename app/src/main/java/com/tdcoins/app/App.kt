@@ -120,6 +120,9 @@ private fun TDCoinsContent(
     var pomodorosDone by remember { mutableIntStateOf(initial.pomodorosDone) }
     var pomodoroBaseline by remember { mutableIntStateOf(initial.pomodoroBaseline) }
     var missions by remember { mutableStateOf(initial.missions) }
+    var deletedMissionIds by remember { mutableStateOf(initial.deletedMissionIds) }
+    var challenges by remember { mutableStateOf(initial.challenges) }
+    var deletedChallengeIds by remember { mutableStateOf(initial.deletedChallengeIds) }
     var purchasedIds by remember { mutableStateOf(initial.purchasedIds) }
     var streakDays by remember { mutableIntStateOf(initial.streakDays) }
     var lastActiveDate by remember { mutableStateOf(initial.lastActiveDate) }
@@ -177,6 +180,9 @@ private fun TDCoinsContent(
         pomodorosDone = snapshot.pomodorosDone
         pomodoroBaseline = snapshot.pomodoroBaseline
         missions = snapshot.missions
+        deletedMissionIds = snapshot.deletedMissionIds
+        challenges = snapshot.challenges
+        deletedChallengeIds = snapshot.deletedChallengeIds
         purchasedIds = snapshot.purchasedIds
         streakDays = snapshot.streakDays
         lastActiveDate = snapshot.lastActiveDate
@@ -189,6 +195,9 @@ private fun TDCoinsContent(
         pomodorosDone = pomodorosDone,
         pomodoroBaseline = pomodoroBaseline,
         missions = missions,
+        deletedMissionIds = deletedMissionIds,
+        challenges = challenges,
+        deletedChallengeIds = deletedChallengeIds,
         purchasedIds = purchasedIds,
         streakDays = streakDays,
         lastActiveDate = lastActiveDate,
@@ -204,7 +213,7 @@ private fun TDCoinsContent(
 
     val latestSnapshot by rememberUpdatedState(currentSnapshot())
 
-    LaunchedEffect(coins, pomodorosDone, missions, purchasedIds, streakDays, lastActiveDate, voiceNotes, economyEvents) {
+    LaunchedEffect(coins, pomodorosDone, missions, deletedMissionIds, challenges, deletedChallengeIds, purchasedIds, streakDays, lastActiveDate, voiceNotes, economyEvents) {
         persistence.save(currentSnapshot())
     }
 
@@ -345,7 +354,9 @@ private fun TDCoinsContent(
                 AppTab.MISSIONS -> MissionsScreen(
                     missions = missions,
                     onMissionsChange = { missions = it },
-                    onReward = { mission ->
+                    onMissionCompleted = { mission ->
+                        missions = missions.filterNot { it.id == mission.id }
+                        deletedMissionIds = (deletedMissionIds + mission.id).distinct()
                         addCoins(mission.coins, "mission-reward-${mission.id}")
                         registerActivity()
                         AppNotifications.showProgress(
@@ -367,18 +378,24 @@ private fun TDCoinsContent(
                 )
                 AppTab.VOICE -> VoiceScreen(
                     savedNotes = voiceNotes,
+                    challenges = challenges,
+                    onChallengesChange = { challenges = it },
+                    onChallengeDeleted = { id ->
+                        challenges = challenges.filterNot { it.id == id }
+                        deletedChallengeIds = (deletedChallengeIds + id).distinct()
+                    },
                     onSaveNote = { note ->
                         voiceNotes = (listOf(note) + voiceNotes).distinct().take(20)
                     },
                     onCreateMission = { title ->
                         missions = listOf(
                             Mission(
-                                id = "voice-${System.currentTimeMillis()}",
+                                id = UUID.randomUUID().toString(),
                                 title = title,
                                 category = MissionCategory.FOCUS,
                                 target = 1,
                                 progress = 0,
-                                coins = 25,
+                                coins = calculateMissionReward(title, MissionCategory.FOCUS, 1),
                             ),
                         ) + missions
                         tab = AppTab.MISSIONS

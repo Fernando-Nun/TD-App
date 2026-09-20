@@ -24,7 +24,10 @@ data class AppSnapshot(
     val coins: Int = 45,
     val pomodorosDone: Int = 0,
     val pomodoroBaseline: Int = 0,
-    val missions: List<Mission> = initialMissions(),
+    val missions: List<Mission> = emptyList(),
+    val deletedMissionIds: List<String> = emptyList(),
+    val challenges: List<VoiceChallenge> = emptyList(),
+    val deletedChallengeIds: List<String> = emptyList(),
     val purchasedIds: List<String> = emptyList(),
     val streakDays: Int = 0,
     val lastActiveDate: String = "",
@@ -33,11 +36,19 @@ data class AppSnapshot(
 )
 
 fun mergeSnapshots(local: AppSnapshot, remote: AppSnapshot): AppSnapshot {
+    val deletedMissionIds = (local.deletedMissionIds + remote.deletedMissionIds + listOf("t1", "t2", "t3", "t4", "t5")).distinct()
     val missions = (local.missions + remote.missions)
+        .filter { it.id !in deletedMissionIds && it.id !in setOf("t1", "t2", "t3", "t4", "t5") }
         .groupBy { it.id }
         .map { (_, versions) ->
             versions.maxWith(compareBy<Mission> { it.progress }.thenBy { it.updatedAt })
         }
+        .sortedByDescending { it.createdAt }
+    val deletedChallengeIds = (local.deletedChallengeIds + remote.deletedChallengeIds).distinct()
+    val challenges = (local.challenges + remote.challenges)
+        .filter { it.id !in deletedChallengeIds }
+        .groupBy { it.id }
+        .map { (_, versions) -> versions.maxBy { it.updatedAt } }
         .sortedByDescending { it.createdAt }
     val events = (local.economyEvents + remote.economyEvents).distinctBy { it.id }
     val pomodoroBaseline = maxOf(local.pomodoroBaseline, remote.pomodoroBaseline)
@@ -46,6 +57,9 @@ fun mergeSnapshots(local: AppSnapshot, remote: AppSnapshot): AppSnapshot {
         pomodorosDone = pomodoroBaseline + events.count { it.id.startsWith("pomodoro-") },
         pomodoroBaseline = pomodoroBaseline,
         missions = missions,
+        deletedMissionIds = deletedMissionIds,
+        challenges = challenges,
+        deletedChallengeIds = deletedChallengeIds,
         purchasedIds = (local.purchasedIds + remote.purchasedIds).distinct(),
         streakDays = maxOf(local.streakDays, remote.streakDays),
         lastActiveDate = maxOf(local.lastActiveDate, remote.lastActiveDate),
@@ -87,7 +101,22 @@ data class VoiceChallenge(
     val icon: String,
     val reminders: List<String>,
     val plan: List<String>,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
 )
+
+fun calculateMissionReward(title: String, category: MissionCategory, target: Int): Int {
+    val normalized = title.lowercase()
+    val keywordBonus = listOf("proyecto", "examen", "ejercicio", "entren", "estudi", "limpiar", "organizar")
+        .count { normalized.contains(it) } * 3
+    val categoryBonus = when (category) {
+        MissionCategory.HEALTH, MissionCategory.HABITS -> 5
+        MissionCategory.FOCUS -> 4
+        MissionCategory.SOCIAL -> 3
+        MissionCategory.ORDER -> 2
+    }
+    return (10 + target.coerceIn(1, 30) * 4 + categoryBonus + keywordBonus).coerceIn(15, 150)
+}
 
 enum class AppTab(val label: String) {
     HOME("Inicio"),

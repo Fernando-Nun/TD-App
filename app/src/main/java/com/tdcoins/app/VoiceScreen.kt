@@ -38,6 +38,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -66,14 +67,17 @@ fun VoiceScreen(
     savedNotes: List<String>,
     onSaveNote: (String) -> Unit,
     onCreateMission: (String) -> Unit,
+    challenges: List<VoiceChallenge> = emptyList(),
+    onChallengesChange: (List<VoiceChallenge>) -> Unit = {},
+    onChallengeDeleted: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
-    val challenges = remember { voiceChallenges() }
     var recording by remember { mutableStateOf(false) }
     var transcript by remember { mutableStateOf("") }
     var recognitionMessage by remember { mutableStateOf("Toca el micrófono y describe lo que necesitas lograr.") }
     var selectedIds by remember { mutableStateOf(emptyList<String>()) }
     var showPlan by remember { mutableStateOf(false) }
+    var showAddChallenge by remember { mutableStateOf(false) }
     val speechRecognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) {
             SpeechRecognizer.createSpeechRecognizer(context)
@@ -279,7 +283,23 @@ fun VoiceScreen(
                 }
             }
         }
-        item { SectionLabel("Mis retos principales", modifier = Modifier.padding(top = 3.dp)) }
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SectionLabel("Mis retos principales")
+                Button(onClick = { showAddChallenge = true }) { Text("Agregar") }
+            }
+        }
+        if (challenges.isEmpty()) {
+            item {
+                ScreenCard {
+                    Text("Aún no tienes retos principales. Agrega uno para recibir un plan hecho para tu objetivo.", modifier = Modifier.padding(16.dp), color = MutedText, fontSize = 13.sp)
+                }
+            }
+        }
         items(challenges, key = { it.id }) { challenge ->
             val selected = challenge.id in selectedIds
             Row(
@@ -302,7 +322,18 @@ fun VoiceScreen(
                 horizontalArrangement = Arrangement.spacedBy(11.dp),
             ) {
                 Text(challenge.icon, fontSize = 23.sp)
-                Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Plan personalizado listo", color = MutedText, fontSize = 10.sp)
+                }
+                TextButton(
+                    onClick = {
+                        selectedIds = selectedIds - challenge.id
+                        onChallengeDeleted(challenge.id)
+                    },
+                ) {
+                    Text("Quitar", color = Color(0xFFB91C1C))
+                }
                 Box(
                     modifier = Modifier
                         .size(22.dp)
@@ -330,6 +361,42 @@ fun VoiceScreen(
         }
         item { Spacer(modifier = Modifier.height(4.dp)) }
     }
+    if (showAddChallenge) {
+        AddChallengeDialog(
+            onDismiss = { showAddChallenge = false },
+            onAdd = { text ->
+                onChallengesChange(listOf(createPersonalChallenge(text)) + challenges)
+                showAddChallenge = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun AddChallengeDialog(
+    onDismiss: () -> Unit,
+    onAdd: (String) -> Unit,
+) {
+    var text by remember { mutableStateOf("") }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nuevo reto principal", fontWeight = FontWeight.Black) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("¿Qué quieres mejorar?") },
+                placeholder = { Text("Ejemplo: me cuesta organizar mis estudios") },
+                minLines = 2,
+            )
+        },
+        confirmButton = {
+            Button(onClick = { if (text.isNotBlank()) onAdd(text.trim()) }, enabled = text.isNotBlank()) {
+                Text("Crear plan")
+            }
+        },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancelar") } },
+    )
 }
 
 @Composable

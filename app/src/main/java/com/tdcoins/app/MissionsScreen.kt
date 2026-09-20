@@ -57,7 +57,8 @@ import kotlinx.coroutines.delay
 fun MissionsScreen(
     missions: List<Mission>,
     onMissionsChange: (List<Mission>) -> Unit,
-    onReward: (Mission) -> Unit,
+    onReward: (Mission) -> Unit = {},
+    onMissionCompleted: ((Mission) -> Unit)? = null,
 ) {
     var showAdd by remember { mutableStateOf(false) }
     var celebratedId by remember { mutableStateOf<String?>(null) }
@@ -75,7 +76,7 @@ fun MissionsScreen(
         )
         if (completed) {
             celebratedId = mission.id
-            onReward(mission)
+            onMissionCompleted?.invoke(mission) ?: onReward(mission)
         }
     }
 
@@ -115,6 +116,19 @@ fun MissionsScreen(
                     }
                 }
             }
+            if (missions.isEmpty()) {
+                item {
+                    ScreenCard {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text("Aún no tienes misiones", fontWeight = FontWeight.Black, fontSize = 16.sp)
+                            Text("Agrega una meta propia para comenzar a ganar TD-Coins.", color = MutedText, fontSize = 12.sp, modifier = Modifier.padding(top = 5.dp))
+                        }
+                    }
+                }
+            }
             items(missions, key = { it.id }) { mission ->
                 MissionCard(
                     mission = mission,
@@ -128,14 +142,14 @@ fun MissionsScreen(
         if (showAdd) {
             AddMissionDialog(
                 onDismiss = { showAdd = false },
-                onAdd = { title, category, target, reward ->
+                onAdd = { title, category, target ->
                     val newMission = Mission(
-                        id = "t${System.currentTimeMillis()}",
+                        id = java.util.UUID.randomUUID().toString(),
                         title = title,
                         category = category,
                         target = target,
                         progress = 0,
-                        coins = reward,
+                        coins = calculateMissionReward(title, category, target),
                     )
                     onMissionsChange(listOf(newMission) + missions)
                     showAdd = false
@@ -265,12 +279,11 @@ private fun MissionCard(
 @Composable
 private fun AddMissionDialog(
     onDismiss: () -> Unit,
-    onAdd: (String, MissionCategory, Int, Int) -> Unit,
+    onAdd: (String, MissionCategory, Int) -> Unit,
 ) {
     var title by remember { mutableStateOf("") }
     var category by remember { mutableStateOf(MissionCategory.FOCUS) }
     var target by remember { mutableIntStateOf(5) }
-    var reward by remember { mutableIntStateOf(30) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -311,19 +324,16 @@ private fun AddMissionDialog(
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
-                    OutlinedTextField(
-                        value = reward.toString(),
-                        onValueChange = { reward = it.toIntOrNull()?.coerceIn(10, 500) ?: reward },
-                        label = { Text("Recompensa") },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Recompensa automática", color = MutedText, fontSize = 11.sp)
+                        Text("${calculateMissionReward(title, category, target)} TD-Coins", fontWeight = FontWeight.Bold, color = PrimaryPurple)
+                    }
                 }
             }
         },
         confirmButton = {
             Button(
-                onClick = { if (title.isNotBlank()) onAdd(title.trim(), category, target, reward) },
+                onClick = { if (title.isNotBlank()) onAdd(title.trim(), category, target) },
                 enabled = title.isNotBlank(),
             ) {
                 Text("Agregar Misión")

@@ -1,12 +1,31 @@
 package com.tdcoins.app
 
-fun initialMissions() = listOf(
-    Mission("t1", "Completar 3 Pomodoros hoy", MissionCategory.FOCUS, 3, 0, 30),
-    Mission("t2", "Rutina matutina completa", MissionCategory.HABITS, 7, 2, 50),
-    Mission("t3", "Leer 20 minutos sin distracción", MissionCategory.FOCUS, 5, 5, 40),
-    Mission("t4", "Ejercicio 15 minutos", MissionCategory.HEALTH, 10, 3, 35),
-    Mission("t5", "Organizar escritorio", MissionCategory.ORDER, 1, 1, 20),
-)
+import java.util.UUID
+
+fun initialMissions() = emptyList<Mission>()
+
+fun createPersonalChallenge(text: String): VoiceChallenge {
+    val clean = text.trim()
+    val normalized = clean.lowercase()
+    val (icon, reminders, plan) = when {
+        listOf("dorm", "sueñ", "descans").any { normalized.contains(it) } ->
+            Triple("🌙", listOf("Apaga pantallas 30 minutos antes de dormir", "Mantén una hora de descanso constante", "Haz una pausa de respiración antes de acostarte"),
+                listOf("Define una hora realista para empezar tu rutina nocturna", "Prepara ropa y pendientes del día siguiente", "Reduce luz y notificaciones 30 minutos antes", "Registra cada noche cómo descansaste"))
+        listOf("enfo", "atenc", "concentr", "distrac").any { normalized.contains(it) } ->
+            Triple("🎯", listOf("Bloquea notificaciones durante tu sesión", "Trabaja en bloques cortos con descansos", "Anota la única tarea que harás ahora"),
+                listOf("Divide el objetivo en una acción de 10 minutos", "Usa un bloque Pomodoro sin distracciones", "Descansa y registra qué te ayudó", "Aumenta gradualmente el siguiente bloque"))
+        listOf("organ", "orden", "limpi").any { normalized.contains(it) } ->
+            Triple("🗂️", listOf("Elige solo tres prioridades para hoy", "Programa 10 minutos para ordenar", "Revisa tu lista al comenzar y cerrar el día"),
+                listOf("Escribe todo lo que necesitas hacer", "Separa lo urgente de lo importante", "Elige tres acciones y ponles un momento", "Cierra el día marcando el siguiente paso"))
+        listOf("ejerc", "salud", "camin", "entren").any { normalized.contains(it) } ->
+            Triple("💪", listOf("Agenda el movimiento en un horario concreto", "Empieza con una intensidad cómoda", "Celebra la constancia, no la perfección"),
+                listOf("Elige una actividad que puedas repetir", "Comienza con 10 minutos", "Aumenta tiempo o intensidad poco a poco", "Registra cómo te sentiste después"))
+        else ->
+            Triple("🌱", listOf("Revisa tu objetivo al iniciar el día", "Haz una acción pequeña antes de posponerlo", "Celebra cada avance observable"),
+                listOf("Describe el resultado que quieres conseguir", "Divide el objetivo en el paso más pequeño", "Reserva un momento concreto para hacerlo", "Revisa el avance y ajusta el siguiente paso"))
+    }
+    return VoiceChallenge(UUID.randomUUID().toString(), clean, icon, reminders, plan)
+}
 
 fun storeItems() = listOf(
     StoreItem(
@@ -75,7 +94,8 @@ fun storeItems() = listOf(
     ),
 )
 
-fun voiceChallenges() = listOf(
+fun voiceChallenges() = emptyList<VoiceChallenge>() /* Built-in challenges were removed; user goals are generated in the profile. */
+/*
     VoiceChallenge(
         "sleep",
         "Se me dificulta dormir",
@@ -156,4 +176,4 @@ fun voiceChallenges() = listOf(
             "Celebra cada vez que pauses antes de reaccionar",
         ),
     ),
-)
+)*/

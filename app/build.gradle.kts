@@ -12,8 +12,8 @@ android {
         applicationId = "com.tdcoins.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val syncApiUrl = providers.environmentVariable("SYNC_API_URL")
             .getOrElse("https://td-app.replit.app")

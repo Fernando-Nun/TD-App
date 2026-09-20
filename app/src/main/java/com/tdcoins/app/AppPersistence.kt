@@ -27,7 +27,11 @@ class AppPersistence(context: Context) {
                             it.id.startsWith("pomodoro-")
                         }).coerceAtLeast(0),
                 ),
-                missions = json.optJSONArray("missions").toMissions().ifEmpty { initialMissions() },
+                missions = json.optJSONArray("missions").toMissions()
+                    .filter { it.id !in LEGACY_MISSION_IDS },
+                deletedMissionIds = (json.optJSONArray("deletedMissionIds").toStrings() + LEGACY_MISSION_IDS).distinct(),
+                challenges = json.optJSONArray("challenges").toChallenges(),
+                deletedChallengeIds = json.optJSONArray("deletedChallengeIds").toStrings(),
                 purchasedIds = json.optJSONArray("purchasedIds").toStrings(),
                 streakDays = json.optInt("streakDays", 0),
                 lastActiveDate = json.optString("lastActiveDate", ""),
@@ -51,6 +55,20 @@ class AppPersistence(context: Context) {
             .put("economyEvents", JSONArray().apply {
                 snapshot.economyEvents.forEach {
                     put(JSONObject().put("id", it.id).put("delta", it.delta).put("createdAt", it.createdAt))
+                }
+            })
+            .put("deletedMissionIds", JSONArray(snapshot.deletedMissionIds))
+            .put("deletedChallengeIds", JSONArray(snapshot.deletedChallengeIds))
+            .put("challenges", JSONArray().apply {
+                snapshot.challenges.forEach { challenge ->
+                    put(JSONObject()
+                        .put("id", challenge.id)
+                        .put("text", challenge.text)
+                        .put("icon", challenge.icon)
+                        .put("reminders", JSONArray(challenge.reminders))
+                        .put("plan", JSONArray(challenge.plan))
+                        .put("createdAt", challenge.createdAt)
+                        .put("updatedAt", challenge.updatedAt))
                 }
             })
             .put("missions", JSONArray().apply {
@@ -135,6 +153,21 @@ class AppPersistence(context: Context) {
             }
         }
 
+    private fun JSONArray?.toChallenges(): List<VoiceChallenge> =
+        if (this == null) emptyList() else List(length()) { index ->
+            getJSONObject(index).let {
+                VoiceChallenge(
+                    id = it.getString("id"),
+                    text = it.optString("text"),
+                    icon = it.optString("icon", "🎯"),
+                    reminders = it.optJSONArray("reminders").toStrings(),
+                    plan = it.optJSONArray("plan").toStrings(),
+                    createdAt = it.optLong("createdAt", System.currentTimeMillis()),
+                    updatedAt = it.optLong("updatedAt", System.currentTimeMillis()),
+                )
+            }
+        }
+
     private companion object {
         const val KEY_SNAPSHOT = "snapshot"
         const val KEY_SESSION = "session"
@@ -142,5 +175,6 @@ class AppPersistence(context: Context) {
         const val KEY_LEGACY_CLAIMED = "legacy_claimed"
         const val KEY_DEVICE = "device"
         const val KEY_PENDING = "pending_operation"
+        val LEGACY_MISSION_IDS = setOf("t1", "t2", "t3", "t4", "t5")
     }
 }

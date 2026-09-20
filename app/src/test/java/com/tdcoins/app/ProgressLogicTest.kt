@@ -2,6 +2,7 @@ package com.tdcoins.app
 
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProgressLogicTest {
@@ -30,5 +31,32 @@ class ProgressLogicTest {
     @Test
     fun `an invalid saved date safely restarts the streak`() {
         assertEquals(StreakResult(1, "2026-09-19"), updateStreak(8, "fecha-invalida", today))
+    }
+
+    @Test
+    fun `mission rewards are automatic and capped`() {
+        val shortReward = calculateMissionReward("Ordenar escritorio", MissionCategory.ORDER, 1)
+        val largeReward = calculateMissionReward(
+            "proyecto examen ejercicio entrenar estudiar limpiar organizar",
+            MissionCategory.FOCUS,
+            30,
+        )
+
+        assertTrue(shortReward in 15..150)
+        assertEquals(150, largeReward)
+    }
+
+    @Test
+    fun `legacy and deleted missions never return after merge`() {
+        val legacy = Mission("t1", "Misión predeterminada", MissionCategory.FOCUS, 1, 0, 20)
+        val deleted = Mission("user-mission", "Misión eliminada", MissionCategory.HEALTH, 5, 3, 35)
+        val merged = mergeSnapshots(
+            AppSnapshot(deletedMissionIds = listOf(deleted.id)),
+            AppSnapshot(missions = listOf(legacy, deleted)),
+        )
+
+        assertTrue(merged.missions.isEmpty())
+        assertTrue(legacy.id in merged.deletedMissionIds)
+        assertTrue(deleted.id in merged.deletedMissionIds)
     }
 }
