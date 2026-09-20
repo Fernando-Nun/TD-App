@@ -306,29 +306,6 @@ fun VoiceScreen(
                     )
                 }
             }
-
-    if (showClearNotes) {
-        AlertDialog(
-            onDismissRequest = { showClearNotes = false },
-            title = { Text("¿Borrar notas recientes?") },
-            text = { Text("Se eliminarán de este dispositivo y no volverán a aparecer al sincronizar.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onNotesCleared()
-                        showClearNotes = false
-                    },
-                ) {
-                    Text("Borrar notas")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showClearNotes = false }) {
-                    Text("Cancelar")
-                }
-            },
-        )
-    }
         }
         item {
             Row(
@@ -407,6 +384,28 @@ fun VoiceScreen(
             }
         }
         item { Spacer(modifier = Modifier.height(4.dp)) }
+    }
+    if (showClearNotes) {
+        AlertDialog(
+            onDismissRequest = { showClearNotes = false },
+            title = { Text("¿Borrar notas recientes?") },
+            text = { Text("Se eliminarán de este dispositivo y no volverán a aparecer al sincronizar.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onNotesCleared()
+                        showClearNotes = false
+                    },
+                ) {
+                    Text("Borrar notas")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearNotes = false }) {
+                    Text("Cancelar")
+                }
+            },
+        )
     }
     if (showAddChallenge) {
         AddChallengeDialog(

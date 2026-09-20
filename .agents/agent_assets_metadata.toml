@@ -14,3 +14,17 @@ mtime_ms = 1789934486885
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/f7d3d635-2b43-4f7a-84de-5c30ea1abb19/21a0cda5-b151-42ad-bd83-babd2289491f"
 storage_version_token = "1789934498480005"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "1IweC2S8y3dNWqHdqy0BX"
+uri = "file://deliverables/TD-App-v1.5-loading-splash-debug.apk"
+type = "unspecified"
+title = "TD-App v1.5 — APK con pantalla de carga"
+description = "APK debug firmado para instalar y probar la nueva pantalla de carga de 5 segundos con logo centrado y efectos visuales de carga."
+logical_id = "e2d70134-f569-4a87-9ac3-f9f3bf4d415e"
+content_hash = "sha256:e6118ccb3cbc33f2b725e8f9b08055140e5d992db7a78b5ba5ee8d88411c6dd0"
+size = 27880550
+mtime_ms = 1789946612812
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/e2d70134-f569-4a87-9ac3-f9f3bf4d415e/cad6cefd-014d-40c0-a7e2-b3a7af73209f"
+storage_version_token = "1789946619337889"
+content_type = "application/octet-stream"
