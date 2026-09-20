@@ -103,7 +103,7 @@ fun MissionsScreen(
                 ) {
                     Column {
                         Text("Mis Misiones", fontSize = 24.sp, fontWeight = FontWeight.Black)
-                        Text("Completa y gana TD-Coins 🪙", color = MutedText, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
+                         Text("Completa y gana TD-Coins", color = MutedText, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
                     }
                     IconButton(
                         onClick = { showAdd = true },

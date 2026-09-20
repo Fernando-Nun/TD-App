@@ -29,8 +29,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,6 +69,7 @@ fun VoiceScreen(
     savedNotes: List<String>,
     onSaveNote: (String) -> Unit,
     onCreateMission: (String) -> Unit,
+    onNotesCleared: () -> Unit = {},
     challenges: List<VoiceChallenge> = emptyList(),
     onChallengesChange: (List<VoiceChallenge>) -> Unit = {},
     onChallengeDeleted: (String) -> Unit = {},
@@ -78,6 +81,7 @@ fun VoiceScreen(
     var selectedIds by remember { mutableStateOf(emptyList<String>()) }
     var showPlan by remember { mutableStateOf(false) }
     var showAddChallenge by remember { mutableStateOf(false) }
+    var showClearNotes by remember { mutableStateOf(false) }
     val speechRecognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) {
             SpeechRecognizer.createSpeechRecognizer(context)
@@ -271,7 +275,27 @@ fun VoiceScreen(
             }
         }
         if (savedNotes.isNotEmpty()) {
-            item { SectionLabel("Notas recientes") }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SectionLabel("Notas recientes")
+                    TextButton(onClick = { showClearNotes = true }) {
+                        Icon(
+                            Icons.Filled.DeleteOutline,
+                            contentDescription = "Borrar notas recientes",
+                            tint = Color(0xFFDC2626),
+                        )
+                        Text(
+                            "Borrar",
+                            color = Color(0xFFDC2626),
+                            modifier = Modifier.padding(start = 4.dp),
+                        )
+                    }
+                }
+            }
             items(savedNotes.take(3)) { note ->
                 ScreenCard {
                     Text(
@@ -282,6 +306,29 @@ fun VoiceScreen(
                     )
                 }
             }
+
+    if (showClearNotes) {
+        AlertDialog(
+            onDismissRequest = { showClearNotes = false },
+            title = { Text("¿Borrar notas recientes?") },
+            text = { Text("Se eliminarán de este dispositivo y no volverán a aparecer al sincronizar.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onNotesCleared()
+                        showClearNotes = false
+                    },
+                ) {
+                    Text("Borrar notas")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearNotes = false }) {
+                    Text("Cancelar")
+                }
+            },
+        )
+    }
         }
         item {
             Row(

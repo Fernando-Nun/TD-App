@@ -1,0 +1,1 @@
+- [Compilación Android](android-build-environment.md) — comprobar la disponibilidad y ruta del SDK antes de depurar errores de Kotlin o Compose.

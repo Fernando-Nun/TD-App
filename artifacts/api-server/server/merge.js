@@ -24,6 +24,10 @@ export function mergeSnapshots(current = {}, incoming = {}) {
     const previous = challengesById.get(challenge.id);
     if (!previous || (challenge.updatedAt ?? 0) > (previous.updatedAt ?? 0)) challengesById.set(challenge.id, challenge);
   }
+  const deletedVoiceNoteIds = [...new Set([
+    ...(current.deletedVoiceNoteIds ?? []),
+    ...(incoming.deletedVoiceNoteIds ?? []),
+  ])];
 
   const economyEvents = uniqueById([
     ...(current.economyEvents ?? []),
@@ -46,7 +50,10 @@ export function mergeSnapshots(current = {}, incoming = {}) {
     purchasedIds: [...new Set([...(current.purchasedIds ?? []), ...(incoming.purchasedIds ?? [])])],
     streakDays: Math.max(current.streakDays ?? 0, incoming.streakDays ?? 0),
     lastActiveDate: [current.lastActiveDate ?? "", incoming.lastActiveDate ?? ""].sort().at(-1),
-    voiceNotes: [...new Set([...(incoming.voiceNotes ?? []), ...(current.voiceNotes ?? [])])].slice(0, 20),
+    voiceNotes: [...new Set([...(incoming.voiceNotes ?? []), ...(current.voiceNotes ?? [])])]
+      .filter((note) => !deletedVoiceNoteIds.includes(note))
+      .slice(0, 20),
+    deletedVoiceNoteIds,
     economyEvents,
   };
 }

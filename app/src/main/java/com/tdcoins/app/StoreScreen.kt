@@ -66,10 +66,17 @@ fun StoreScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Text("🪙", fontSize = 37.sp)
+                CoinIcon(
+                    modifier = Modifier.size(42.dp),
+                    tint = Color(0xFFFBBF24),
+                    contentDescription = "TD-Coins",
+                )
                 Column {
                     Text("TU SALDO", color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    Text(coins.toString(), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Black)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        CoinIcon(modifier = Modifier.size(26.dp), tint = Color(0xFFFBBF24), contentDescription = "Saldo TD-Coins")
+                        Text(coins.toString(), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Black)
+                    }
                     Text("TD-Coins disponibles", color = Color.White.copy(alpha = 0.75f), fontSize = 11.sp)
                 }
             }

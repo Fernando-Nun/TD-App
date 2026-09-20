@@ -152,7 +152,11 @@ fun PomodoroScreen(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     repeat(4) { index ->
-                        Text(if (index < state.sessions) "🍅" else "⚪", fontSize = 19.sp)
+                        PomodoroIcon(
+                            modifier = Modifier.size(21.dp),
+                            tint = if (index < state.sessions) Color(0xFFEF4444) else Color(0xFFD1D5DB),
+                            contentDescription = if (index < state.sessions) "Pomodoro completado" else "Pomodoro pendiente",
+                        )
                     }
                 }
             }

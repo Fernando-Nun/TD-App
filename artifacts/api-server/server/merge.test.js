@@ -61,3 +61,12 @@ test("syncs user challenges and honors challenge tombstones", () => {
   assert.deepEqual(merged.challenges.map((challenge) => challenge.text), ["Dormir mejor"]);
   assert.deepEqual(merged.deletedChallengeIds, ["focus"]);
 });
+
+test("syncs deleted voice-note tombstones and prevents resurrection", () => {
+  const merged = mergeSnapshots(
+    { voiceNotes: ["keep", "remove"], deletedVoiceNoteIds: ["remove"] },
+    { voiceNotes: ["remove", "new"] },
+  );
+  assert.deepEqual(merged.voiceNotes, ["new", "keep"]);
+  assert.deepEqual(merged.deletedVoiceNoteIds, ["remove"]);
+});

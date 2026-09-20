@@ -40,6 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 
 @Composable
 fun CoinBadge(
@@ -55,7 +59,11 @@ fun CoinBadge(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(if (small) "🪙" else "🪙", fontSize = if (small) 12.sp else 15.sp)
+        CoinIcon(
+            modifier = Modifier.size(if (small) 14.dp else 18.dp),
+            tint = Color(0xFFB45309),
+            contentDescription = null,
+        )
         Text(
             amount.toString(),
             color = Color(0xFF78350F),
@@ -67,7 +75,11 @@ fun CoinBadge(
 
 @Composable
 fun AppHeader(coins: Int, syncStatus: String, onOpenReminders: () -> Unit, onSignOut: () -> Unit) {
-    Surface(color = Background, shadowElevation = 0.dp) {
+    Surface(
+        color = Background,
+        shadowElevation = 0.dp,
+        modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +101,11 @@ fun AppHeader(coins: Int, syncStatus: String, onOpenReminders: () -> Unit, onSig
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text("🪙", fontSize = 12.sp)
+                CoinIcon(
+                    modifier = Modifier.size(16.dp),
+                    tint = Color(0xFFB45309),
+                    contentDescription = null,
+                )
                 Text(
                     coins.toString(),
                     color = Color(0xFFB45309),
@@ -123,6 +139,7 @@ fun BottomNavigation(active: AppTab, onNavigate: (AppTab) -> Unit) {
         color = Color.White,
         modifier = Modifier
             .fillMaxWidth()
+            .navigationBarsPadding()
             .testTag("bottom-navigation"),
         shadowElevation = 8.dp,
     ) {

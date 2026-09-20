@@ -123,6 +123,7 @@ private fun TDCoinsContent(
     var deletedMissionIds by remember { mutableStateOf(initial.deletedMissionIds) }
     var challenges by remember { mutableStateOf(initial.challenges) }
     var deletedChallengeIds by remember { mutableStateOf(initial.deletedChallengeIds) }
+    var deletedVoiceNoteIds by remember { mutableStateOf(initial.deletedVoiceNoteIds) }
     var purchasedIds by remember { mutableStateOf(initial.purchasedIds) }
     var streakDays by remember { mutableIntStateOf(initial.streakDays) }
     var lastActiveDate by remember { mutableStateOf(initial.lastActiveDate) }
@@ -183,6 +184,7 @@ private fun TDCoinsContent(
         deletedMissionIds = snapshot.deletedMissionIds
         challenges = snapshot.challenges
         deletedChallengeIds = snapshot.deletedChallengeIds
+        deletedVoiceNoteIds = snapshot.deletedVoiceNoteIds
         purchasedIds = snapshot.purchasedIds
         streakDays = snapshot.streakDays
         lastActiveDate = snapshot.lastActiveDate
@@ -198,6 +200,7 @@ private fun TDCoinsContent(
         deletedMissionIds = deletedMissionIds,
         challenges = challenges,
         deletedChallengeIds = deletedChallengeIds,
+        deletedVoiceNoteIds = deletedVoiceNoteIds,
         purchasedIds = purchasedIds,
         streakDays = streakDays,
         lastActiveDate = lastActiveDate,
@@ -213,7 +216,7 @@ private fun TDCoinsContent(
 
     val latestSnapshot by rememberUpdatedState(currentSnapshot())
 
-    LaunchedEffect(coins, pomodorosDone, missions, deletedMissionIds, challenges, deletedChallengeIds, purchasedIds, streakDays, lastActiveDate, voiceNotes, economyEvents) {
+    LaunchedEffect(coins, pomodorosDone, missions, deletedMissionIds, challenges, deletedChallengeIds, deletedVoiceNoteIds, purchasedIds, streakDays, lastActiveDate, voiceNotes, economyEvents) {
         persistence.save(currentSnapshot())
     }
 
@@ -378,6 +381,10 @@ private fun TDCoinsContent(
                 )
                 AppTab.VOICE -> VoiceScreen(
                     savedNotes = voiceNotes,
+                    onNotesCleared = {
+                        deletedVoiceNoteIds = (deletedVoiceNoteIds + voiceNotes).distinct()
+                        voiceNotes = emptyList()
+                    },
                     challenges = challenges,
                     onChallengesChange = { challenges = it },
                     onChallengeDeleted = { id ->
@@ -385,6 +392,7 @@ private fun TDCoinsContent(
                         deletedChallengeIds = (deletedChallengeIds + id).distinct()
                     },
                     onSaveNote = { note ->
+                        deletedVoiceNoteIds = deletedVoiceNoteIds - note.trim()
                         voiceNotes = (listOf(note) + voiceNotes).distinct().take(20)
                     },
                     onCreateMission = { title ->

@@ -34,6 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
 
+private enum class DashboardIcon { COINS, POMODORO, MISSION, STREAK }
+
+private data class DashboardStat(
+    val label: String,
+    val value: Int,
+    val color: Color,
+    val icon: DashboardIcon,
+)
+
 @Composable
 fun HomeScreen(
     coins: Int,
@@ -56,10 +65,10 @@ fun HomeScreen(
     )
     val tipOfDay = tips[LocalDateTime.now().dayOfWeek.value % tips.size]
     val stats = listOf(
-        Triple("TD-Coins", coins, Color(0xFFF59E0B) to "🪙"),
-        Triple("Pomodoros", pomodorosDone, PrimaryPurple to "🍅"),
-        Triple("Misiones", completedMissions, SecondaryTeal to "✅"),
-        Triple("Racha", streakDays, AccentOrange to "🔥"),
+        DashboardStat("TD-Coins", coins, Color(0xFFF59E0B), DashboardIcon.COINS),
+        DashboardStat("Pomodoros", pomodorosDone, PrimaryPurple, DashboardIcon.POMODORO),
+        DashboardStat("Misiones", completedMissions, SecondaryTeal, DashboardIcon.MISSION),
+        DashboardStat("Racha", streakDays, AccentOrange, DashboardIcon.STREAK),
     )
     val shortcuts = listOf(
         Shortcut(AppTab.POMODORO, Icons.Filled.Timer, "Pomodoro", "Inicia un bloque de enfoque", PrimaryPurple),
@@ -119,22 +128,42 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        statsRow.forEach { (label, value, colorAndIcon) ->
-                            val (color, icon) = colorAndIcon
+                        statsRow.forEach { stat ->
                             ScreenCard(modifier = Modifier.weight(1f)) {
                                 Column(
                                     modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
-                                    Text(icon, fontSize = 23.sp)
+                                    when (stat.icon) {
+                                        DashboardIcon.COINS -> CoinIcon(
+                                            modifier = Modifier.size(25.dp),
+                                            tint = stat.color,
+                                            contentDescription = "TD-Coins",
+                                        )
+                                        DashboardIcon.POMODORO -> PomodoroIcon(
+                                            modifier = Modifier.size(25.dp),
+                                            tint = stat.color,
+                                            contentDescription = "Pomodoros",
+                                        )
+                                        DashboardIcon.MISSION -> MissionCompleteIcon(
+                                            modifier = Modifier.size(25.dp),
+                                            tint = stat.color,
+                                            contentDescription = "Misiones completadas",
+                                        )
+                                        DashboardIcon.STREAK -> StreakIcon(
+                                            modifier = Modifier.size(25.dp),
+                                            tint = stat.color,
+                                            contentDescription = "Racha",
+                                        )
+                                    }
                                     Text(
-                                        value.toString(),
-                                        color = color,
+                                        stat.value.toString(),
+                                        color = stat.color,
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Black,
                                         modifier = Modifier.padding(top = 2.dp),
                                     )
-                                    Text(label, color = MutedText, fontSize = 10.sp)
+                                    Text(stat.label, color = MutedText, fontSize = 10.sp)
                                 }
                             }
                         }

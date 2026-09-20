@@ -28,6 +28,7 @@ data class AppSnapshot(
     val deletedMissionIds: List<String> = emptyList(),
     val challenges: List<VoiceChallenge> = emptyList(),
     val deletedChallengeIds: List<String> = emptyList(),
+    val deletedVoiceNoteIds: List<String> = emptyList(),
     val purchasedIds: List<String> = emptyList(),
     val streakDays: Int = 0,
     val lastActiveDate: String = "",
@@ -50,6 +51,7 @@ fun mergeSnapshots(local: AppSnapshot, remote: AppSnapshot): AppSnapshot {
         .groupBy { it.id }
         .map { (_, versions) -> versions.maxBy { it.updatedAt } }
         .sortedByDescending { it.createdAt }
+    val deletedVoiceNoteIds = (local.deletedVoiceNoteIds + remote.deletedVoiceNoteIds).distinct()
     val events = (local.economyEvents + remote.economyEvents).distinctBy { it.id }
     val pomodoroBaseline = maxOf(local.pomodoroBaseline, remote.pomodoroBaseline)
     return AppSnapshot(
@@ -63,7 +65,11 @@ fun mergeSnapshots(local: AppSnapshot, remote: AppSnapshot): AppSnapshot {
         purchasedIds = (local.purchasedIds + remote.purchasedIds).distinct(),
         streakDays = maxOf(local.streakDays, remote.streakDays),
         lastActiveDate = maxOf(local.lastActiveDate, remote.lastActiveDate),
-        voiceNotes = (local.voiceNotes + remote.voiceNotes).distinct().take(20),
+        voiceNotes = (local.voiceNotes + remote.voiceNotes)
+            .distinct()
+            .filterNot { it in deletedVoiceNoteIds }
+            .take(20),
+        deletedVoiceNoteIds = deletedVoiceNoteIds,
         economyEvents = events,
     )
 }

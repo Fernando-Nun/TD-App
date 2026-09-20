@@ -32,6 +32,7 @@ class AppPersistence(context: Context) {
                 deletedMissionIds = (json.optJSONArray("deletedMissionIds").toStrings() + LEGACY_MISSION_IDS).distinct(),
                 challenges = json.optJSONArray("challenges").toChallenges(),
                 deletedChallengeIds = json.optJSONArray("deletedChallengeIds").toStrings(),
+                deletedVoiceNoteIds = json.optJSONArray("deletedVoiceNoteIds").toStrings(),
                 purchasedIds = json.optJSONArray("purchasedIds").toStrings(),
                 streakDays = json.optInt("streakDays", 0),
                 lastActiveDate = json.optString("lastActiveDate", ""),
@@ -52,6 +53,7 @@ class AppPersistence(context: Context) {
             .put("lastActiveDate", snapshot.lastActiveDate)
             .put("purchasedIds", JSONArray(snapshot.purchasedIds))
             .put("voiceNotes", JSONArray(snapshot.voiceNotes))
+            .put("deletedVoiceNoteIds", JSONArray(snapshot.deletedVoiceNoteIds))
             .put("economyEvents", JSONArray().apply {
                 snapshot.economyEvents.forEach {
                     put(JSONObject().put("id", it.id).put("delta", it.delta).put("createdAt", it.createdAt))
