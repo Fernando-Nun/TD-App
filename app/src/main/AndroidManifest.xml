@@ -15,7 +15,9 @@
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:label="TD-Coins"
+        android:icon="@drawable/logo"
+        android:roundIcon="@drawable/logo"
+        android:label="TD-App"
         android:supportsRtl="true"
         android:theme="@style/Theme.TDCoins">
         <activity

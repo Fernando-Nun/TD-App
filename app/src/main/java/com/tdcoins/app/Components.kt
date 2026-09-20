@@ -77,7 +77,7 @@ fun AppHeader(coins: Int, syncStatus: String, onOpenReminders: () -> Unit, onSig
         ) {
             Image(
                 painter = painterResource(R.drawable.logo),
-                contentDescription = "Logo TD-Coins",
+                contentDescription = "Logo TD-App",
                 modifier = Modifier.size(42.dp),
                 contentScale = ContentScale.Fit,
             )
