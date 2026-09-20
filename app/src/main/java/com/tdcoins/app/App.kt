@@ -31,7 +31,10 @@ import java.util.UUID
 import kotlin.math.ceil
 
 @Composable
-fun TDCoinsApp() {
+fun TDCoinsApp(
+    notificationDestination: AppTab? = null,
+    onDestinationConsumed: () -> Unit = {},
+) {
     val context = LocalContext.current
     val persistence = remember { AppPersistence(context) }
     val syncClient = remember { SyncClient(persistence) }
@@ -53,7 +56,7 @@ fun TDCoinsApp() {
         }
         return
     }
-    TDCoinsContent(persistence, syncClient) {
+    TDCoinsContent(persistence, syncClient, notificationDestination, onDestinationConsumed) {
         syncClient.signOut()
         signedIn = false
     }
@@ -63,6 +66,8 @@ fun TDCoinsApp() {
 private fun TDCoinsContent(
     persistence: AppPersistence,
     syncClient: SyncClient,
+    notificationDestination: AppTab?,
+    onDestinationConsumed: () -> Unit,
     onSignOut: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -92,13 +97,36 @@ private fun TDCoinsContent(
     var pomodoroSessions by rememberSaveable { mutableIntStateOf(0) }
     var pomodoroDeadline by rememberSaveable { mutableLongStateOf(0L) }
     var showPomodoroCelebration by rememberSaveable { mutableStateOf(false) }
+    val reminderPreferences = remember { ReminderPreferences(context) }
+    var reminderSettings by remember { mutableStateOf(reminderPreferences.load()) }
+    var showReminderSettings by rememberSaveable { mutableStateOf(false) }
+    var notificationPermissionGranted by remember {
+        mutableStateOf(AppNotifications.notificationsAllowed(context))
+    }
+    var enableRemindersAfterPermission by remember { mutableStateOf(false) }
 
     val notificationPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
-    ) {}
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+    ) { granted ->
+        notificationPermissionGranted = granted
+        val updated = settingsAfterPermissionResult(
+            reminderSettings,
+            granted = granted,
+            enableAfterGrant = enableRemindersAfterPermission,
+        )
+        enableRemindersAfterPermission = false
+        if (updated != reminderSettings) {
+            reminderSettings = updated
+            reminderPreferences.save(reminderSettings)
+            AppNotifications.updateSchedule(context, reminderSettings)
+        }
+    }
+
+    LaunchedEffect(notificationDestination) {
+        notificationDestination?.let {
+            tab = it
+            showReminderSettings = false
+            onDestinationConsumed()
         }
     }
 
@@ -204,9 +232,16 @@ private fun TDCoinsContent(
         val wideLayout = maxWidth >= 700.dp
         Scaffold(
             containerColor = Background,
-            topBar = { AppHeader(coins, syncStatus, onSignOut) },
+            topBar = {
+                AppHeader(
+                    coins = coins,
+                    syncStatus = syncStatus,
+                    onOpenReminders = { showReminderSettings = true },
+                    onSignOut = onSignOut,
+                )
+            },
             bottomBar = {
-                if (!wideLayout) BottomNavigation(tab) { tab = it }
+                if (!wideLayout && !showReminderSettings) BottomNavigation(tab) { tab = it }
             },
         ) { padding ->
             Row(
@@ -214,9 +249,26 @@ private fun TDCoinsContent(
                     .fillMaxSize()
                     .padding(padding),
             ) {
-                if (wideLayout) SideNavigation(tab) { tab = it }
+                if (wideLayout && !showReminderSettings) SideNavigation(tab) { tab = it }
                 Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                    when (tab) {
+                    if (showReminderSettings) {
+                        ReminderSettingsScreen(
+                            settings = reminderSettings,
+                            permissionGranted = notificationPermissionGranted,
+                            onSettingsChange = { updated ->
+                                reminderSettings = updated
+                                reminderPreferences.save(updated)
+                                AppNotifications.updateSchedule(context, updated)
+                            },
+                            onRequestPermission = { enableAfterGrant ->
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    enableRemindersAfterPermission = enableAfterGrant
+                                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            },
+                            onBack = { showReminderSettings = false },
+                        )
+                    } else when (tab) {
                 AppTab.HOME -> HomeScreen(
                     coins = coins,
                     pomodorosDone = pomodorosDone,

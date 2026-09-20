@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationRail
@@ -65,7 +66,7 @@ fun CoinBadge(
 }
 
 @Composable
-fun AppHeader(coins: Int, syncStatus: String, onSignOut: () -> Unit) {
+fun AppHeader(coins: Int, syncStatus: String, onOpenReminders: () -> Unit, onSignOut: () -> Unit) {
     Surface(color = Background, shadowElevation = 0.dp) {
         Row(
             modifier = Modifier
@@ -97,8 +98,13 @@ fun AppHeader(coins: Int, syncStatus: String, onSignOut: () -> Unit) {
                 )
             }
             Text(syncStatus, color = MutedText, fontSize = 10.sp)
-            IconButton(onClick = onSignOut) {
-                Icon(Icons.Filled.Logout, contentDescription = "Cerrar sesión", tint = MutedText)
+            Row {
+                IconButton(onClick = onOpenReminders) {
+                    Icon(Icons.Filled.Notifications, contentDescription = "Configurar recordatorios", tint = PrimaryPurple)
+                }
+                IconButton(onClick = onSignOut) {
+                    Icon(Icons.Filled.Logout, contentDescription = "Cerrar sesión", tint = MutedText)
+                }
             }
         }
     }
