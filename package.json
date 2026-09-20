@@ -8,6 +8,7 @@
     "test:server": "node --test server/*.test.js"
   },
   "dependencies": {
+    "@replit/connectors-sdk": "^0.4.3",
     "express": "^5.2.1",
     "pg": "^8.23.0"
   }

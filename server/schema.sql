@@ -12,6 +12,23 @@ CREATE TABLE IF NOT EXISTS sync_sessions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_codes (
+  code_hash text PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES sync_users(id) ON DELETE CASCADE,
+  expires_at timestamptz NOT NULL,
+  used_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS password_reset_codes_user_id_idx
+  ON password_reset_codes(user_id);
+
+CREATE TABLE IF NOT EXISTS password_reset_limits (
+  scope_hash text PRIMARY KEY,
+  window_start timestamptz NOT NULL DEFAULT now(),
+  request_count integer NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS sync_state (
   user_id uuid PRIMARY KEY REFERENCES sync_users(id) ON DELETE CASCADE,
   snapshot jsonb NOT NULL,

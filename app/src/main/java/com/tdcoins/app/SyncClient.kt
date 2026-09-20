@@ -19,6 +19,27 @@ class SyncClient(private val persistence: AppPersistence) {
             }
         }
 
+    suspend fun requestPasswordReset(email: String): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            request(
+                "/api/auth/password-reset/request",
+                JSONObject().put("email", email),
+                null,
+            ).getString("message")
+        }
+    }
+
+    suspend fun resetPassword(email: String, code: String, password: String): Result<String> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                request(
+                    "/api/auth/password-reset/confirm",
+                    JSONObject().put("email", email).put("code", code).put("password", password),
+                    null,
+                ).getString("message")
+            }
+        }
+
     suspend fun sync(snapshot: AppSnapshot): Result<AppSnapshot> = withContext(Dispatchers.IO) {
         runCatching {
             val token = persistence.sessionToken() ?: error("No active session")

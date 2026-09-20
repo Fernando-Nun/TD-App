@@ -42,18 +42,47 @@ fun TDCoinsApp(
     var signedIn by remember { mutableStateOf(persistence.sessionToken() != null) }
     var authenticating by remember { mutableStateOf(false) }
     var authError by remember { mutableStateOf<String?>(null) }
+    var authMessage by remember { mutableStateOf<String?>(null) }
 
     if (!signedIn) {
-        AuthScreen(authenticating, authError) { email, password, register ->
-            scope.launch {
-                authenticating = true
-                authError = null
-                syncClient.authenticate(email, password, register)
-                    .onSuccess { signedIn = true }
-                    .onFailure { authError = it.message ?: "No se pudo iniciar sesión." }
-                authenticating = false
-            }
-        }
+        AuthScreen(
+            loading = authenticating,
+            error = authError,
+            message = authMessage,
+            onSubmit = { email, password, register ->
+                scope.launch {
+                    authenticating = true
+                    authError = null
+                    authMessage = null
+                    syncClient.authenticate(email, password, register)
+                        .onSuccess { signedIn = true }
+                        .onFailure { authError = it.message ?: "No se pudo iniciar sesión." }
+                    authenticating = false
+                }
+            },
+            onRequestReset = { email ->
+                scope.launch {
+                    authenticating = true
+                    authError = null
+                    authMessage = null
+                    syncClient.requestPasswordReset(email)
+                        .onSuccess { authMessage = it }
+                        .onFailure { authError = it.message ?: "No se pudo solicitar el código." }
+                    authenticating = false
+                }
+            },
+            onResetPassword = { email, code, password ->
+                scope.launch {
+                    authenticating = true
+                    authError = null
+                    authMessage = null
+                    syncClient.resetPassword(email, code, password)
+                        .onSuccess { authMessage = it }
+                        .onFailure { authError = it.message ?: "No se pudo cambiar la contraseña." }
+                    authenticating = false
+                }
+            },
+        )
         return
     }
     TDCoinsContent(persistence, syncClient, notificationDestination, onDestinationConsumed) {
