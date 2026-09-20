@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "TD-Coins"
+description = "Página oficial de TD-Coins con una explicación breve de la aplicación y descarga directa para Android."
+version = "1.0.0"
+id = "artifacts/td-coins-web"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26095
+
+[services.development]
+run = "pnpm --filter @workspace/td-coins-web run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/td-coins-web", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/td-coins-web/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26095"
+BASE_PATH = "/"
