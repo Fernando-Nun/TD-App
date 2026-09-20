@@ -43,8 +43,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,7 +88,9 @@ fun MissionsScreen(
 
     Box {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("missions-list"),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp, vertical = 18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -228,7 +233,11 @@ private fun MissionCard(
                         Spacer(modifier = Modifier.width(12.dp))
                         Button(
                             onClick = onIncrement,
-                            modifier = Modifier.size(width = 48.dp, height = 36.dp),
+                            modifier = Modifier
+                                .size(width = 48.dp, height = 36.dp)
+                                .semantics {
+                                    contentDescription = "Avanzar misión ${mission.title}"
+                                },
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = mission.category.color),
@@ -273,10 +282,13 @@ private fun AddMissionDialog(
                     onValueChange = { title = it },
                     label = { Text("¿Qué quieres lograr?") },
                     singleLine = true,
+                    modifier = Modifier.semantics { traversalIndex = 0f },
                 )
                 Text("Categoría", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .semantics { traversalIndex = 1f },
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     MissionCategory.entries.forEach { option ->

@@ -37,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.Image
 
 @Composable
@@ -114,7 +115,9 @@ fun BottomNavigation(active: AppTab, onNavigate: (AppTab) -> Unit) {
     )
     Surface(
         color = Color.White,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("bottom-navigation"),
         shadowElevation = 8.dp,
     ) {
         Row(
@@ -174,7 +177,10 @@ fun SideNavigation(active: AppTab, onNavigate: (AppTab) -> Unit) {
         AppTab.STORE to (Icons.Filled.ShoppingBag to "Tienda"),
         AppTab.VOICE to (Icons.Filled.Mic to "Mi perfil"),
     )
-    NavigationRail(containerColor = Color.White) {
+    NavigationRail(
+        containerColor = Color.White,
+        modifier = Modifier.testTag("side-navigation"),
+    ) {
         Spacer(modifier = Modifier.height(12.dp))
         tabs.forEach { (tab, iconAndLabel) ->
             NavigationRailItem(

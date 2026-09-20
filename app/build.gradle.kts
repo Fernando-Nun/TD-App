@@ -14,6 +14,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val syncApiUrl = providers.environmentVariable("SYNC_API_URL")
             .orElse(providers.environmentVariable("REPLIT_DEV_DOMAIN").map { "https://$it" })
             .getOrElse("")
@@ -65,4 +66,10 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test:core-ktx:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

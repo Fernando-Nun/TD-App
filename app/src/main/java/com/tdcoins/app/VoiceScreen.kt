@@ -50,6 +50,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -187,7 +193,8 @@ fun VoiceScreen(
                         onClick = { toggleRecording() },
                         modifier = Modifier
                             .padding(top = 14.dp)
-                            .size(80.dp),
+                            .size(80.dp)
+                            .testTag("voice-record"),
                         shape = CircleShape,
                         color = if (recording) Color(0xFFEF4444) else PrimaryPurple,
                         shadowElevation = 8.dp,
@@ -284,6 +291,12 @@ fun VoiceScreen(
                     .clickable {
                         selectedIds = if (selected) selectedIds - challenge.id else selectedIds + challenge.id
                     }
+                    .semantics {
+                        role = Role.Checkbox
+                        this.selected = selected
+                        contentDescription = challenge.text
+                    }
+                    .testTag("challenge-${challenge.id}")
                     .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(11.dp),
