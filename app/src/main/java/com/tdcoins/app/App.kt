@@ -56,7 +56,13 @@ fun TDCoinsApp(
                     authMessage = null
                     syncClient.authenticate(email, password, register)
                         .onSuccess { signedIn = true }
-                        .onFailure { authError = it.message ?: "No se pudo iniciar sesión." }
+                        .onFailure {
+                            authError = it.message ?: if (register) {
+                                "No se pudo crear la cuenta. Revisa tu conexión e inténtalo de nuevo."
+                            } else {
+                                "No se pudo iniciar sesión. Revisa tu conexión e inténtalo de nuevo."
+                            }
+                        }
                     authenticating = false
                 }
             },

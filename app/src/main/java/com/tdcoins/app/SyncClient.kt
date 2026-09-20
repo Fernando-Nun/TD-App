@@ -3,8 +3,13 @@ package com.tdcoins.app
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.IOException
+import java.net.ConnectException
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.net.URL
+import javax.net.ssl.SSLException
 
 class SyncClient(private val persistence: AppPersistence) {
     suspend fun authenticate(email: String, password: String, register: Boolean): Result<Unit> =
@@ -89,6 +94,22 @@ class SyncClient(private val persistence: AppPersistence) {
             }
             if (responseCode !in 200..299) error(json.optString("error", "Error de conexión"))
             json
+        } catch (error: IOException) {
+            throw IOException(
+                when (error) {
+                    is UnknownHostException ->
+                        "No se encontró el servidor de TD-App. Comprueba que el teléfono tenga internet."
+                    is SocketTimeoutException ->
+                        "El servidor tardó demasiado en responder. Comprueba tu conexión e inténtalo de nuevo."
+                    is SSLException ->
+                        "No se pudo establecer una conexión segura con TD-App."
+                    is ConnectException ->
+                        "No se pudo conectar con el servidor de TD-App. Comprueba tu conexión."
+                    else ->
+                        "No se pudo conectar con el servidor de TD-App. Comprueba tu conexión."
+                },
+                error,
+            )
         } finally {
             connection.disconnect()
         }
