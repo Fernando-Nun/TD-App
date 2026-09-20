@@ -71,10 +71,23 @@ class SyncClient(private val persistence: AppPersistence) {
             connection.readTimeout = 10_000
             connection.doOutput = true
             connection.outputStream.use { it.write(body.toString().toByteArray()) }
-            val stream = if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream
-            val response = stream.bufferedReader().use { it.readText() }
-            val json = if (response.isBlank()) JSONObject() else JSONObject(response)
-            if (connection.responseCode !in 200..299) error(json.optString("error", "Error de conexión"))
+            val responseCode = connection.responseCode
+            val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
+            val response = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
+            val json = if (response.isBlank()) {
+                JSONObject()
+            } else {
+                runCatching { JSONObject(response) }.getOrElse {
+                    error(
+                        if (responseCode in 200..299) {
+                            "El servidor devolvió una respuesta no válida. Descarga la versión más reciente de TD-App."
+                        } else {
+                            "No se pudo conectar con el servidor de TD-App (HTTP $responseCode)."
+                        },
+                    )
+                }
+            }
+            if (responseCode !in 200..299) error(json.optString("error", "Error de conexión"))
             json
         } finally {
             connection.disconnect()

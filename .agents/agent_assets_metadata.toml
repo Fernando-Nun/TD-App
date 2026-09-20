@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "zHEStOT3kM1xbH6bvccuS"
+uri = "file://artifacts/td-coins-web/public/downloads/td-coins.apk"
+type = "unspecified"
+title = "TD-App APK corregido"
+description = "Versión Android actualizada con autenticación corregida, mejor pantalla de acceso y logo de TD-App."
+logical_id = "f7d3d635-2b43-4f7a-84de-5c30ea1abb19"
+content_hash = "sha256:823460b31c7fdf370a9773b959311c647f6a10cb0d6e9e6f58f60f2f1d04c8b1"
+size = 28102056
+mtime_ms = 1789923596544
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/f7d3d635-2b43-4f7a-84de-5c30ea1abb19/bafba345-cf61-48a7-b644-d6a4cf739978"
+storage_version_token = "1789923622719969"
+content_type = "application/octet-stream"
