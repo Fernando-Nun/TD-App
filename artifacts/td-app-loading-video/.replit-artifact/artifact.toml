@@ -1,0 +1,29 @@
+kind = "video"
+previewPath = "/td-app-loading/"
+title = "TD-App — Animación de carga"
+description = "Pieza vertical de motion graphics para presentar la animación de carga original de TD-App con su logo, enfoque y progreso."
+version = "1.0.0"
+id = "artifacts/td-app-loading-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/td-app-loading/" ]
+localPort = 25424
+
+[services.development]
+run = "pnpm --filter @workspace/td-app-loading-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/td-app-loading-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/td-app-loading-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25424"
+BASE_PATH = "/td-app-loading/"
+videoAspectRatio = "9:16"
