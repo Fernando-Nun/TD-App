@@ -39,6 +39,7 @@ fun HomeScreen(
     coins: Int,
     pomodorosDone: Int,
     completedMissions: Int,
+    streakDays: Int,
     onNavigate: (AppTab) -> Unit,
 ) {
     val hour = LocalDateTime.now().hour
@@ -58,6 +59,7 @@ fun HomeScreen(
         Triple("TD-Coins", coins, Color(0xFFF59E0B) to "🪙"),
         Triple("Pomodoros", pomodorosDone, PrimaryPurple to "🍅"),
         Triple("Misiones", completedMissions, SecondaryTeal to "✅"),
+        Triple("Racha", streakDays, AccentOrange to "🔥"),
     )
     val shortcuts = listOf(
         Shortcut(AppTab.POMODORO, Icons.Filled.Timer, "Pomodoro", "Inicia un bloque de enfoque", PrimaryPurple),
@@ -111,27 +113,32 @@ fun HomeScreen(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                stats.forEach { (label, value, colorAndIcon) ->
-                    val (color, icon) = colorAndIcon
-                    ScreenCard(modifier = Modifier.weight(1f)) {
-                        Column(
-                            modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text(icon, fontSize = 23.sp)
-                            Text(
-                                value.toString(),
-                                color = color,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier.padding(top = 2.dp),
-                            )
-                            Text(label, color = MutedText, fontSize = 10.sp)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                stats.chunked(2).forEach { statsRow ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        statsRow.forEach { (label, value, colorAndIcon) ->
+                            val (color, icon) = colorAndIcon
+                            ScreenCard(modifier = Modifier.weight(1f)) {
+                                Column(
+                                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Text(icon, fontSize = 23.sp)
+                                    Text(
+                                        value.toString(),
+                                        color = color,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Black,
+                                        modifier = Modifier.padding(top = 2.dp),
+                                    )
+                                    Text(label, color = MutedText, fontSize = 10.sp)
+                                }
+                            }
                         }
+                        if (statsRow.size == 1) Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }

@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppNotifications.createChannel(this)
         enableEdgeToEdge()
         setContent {
             TDCoinsTheme {

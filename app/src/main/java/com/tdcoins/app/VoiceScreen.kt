@@ -1,5 +1,15 @@
 package com.tdcoins.app
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,10 +34,12 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,22 +49,112 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
+import java.util.Locale
 
 @Composable
-fun VoiceScreen() {
+fun VoiceScreen(
+    savedNotes: List<String>,
+    onSaveNote: (String) -> Unit,
+    onCreateMission: (String) -> Unit,
+) {
+    val context = LocalContext.current
     val challenges = remember { voiceChallenges() }
     var recording by remember { mutableStateOf(false) }
+    var transcript by remember { mutableStateOf("") }
+    var recognitionMessage by remember { mutableStateOf("Toca el micrófono y describe lo que necesitas lograr.") }
     var selectedIds by remember { mutableStateOf(emptyList<String>()) }
     var showPlan by remember { mutableStateOf(false) }
+    val speechRecognizer = remember {
+        if (SpeechRecognizer.isRecognitionAvailable(context)) {
+            SpeechRecognizer.createSpeechRecognizer(context)
+        } else {
+            null
+        }
+    }
 
-    LaunchedEffect(recording) {
+    DisposableEffect(speechRecognizer) {
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                recognitionMessage = "Escuchando… habla con claridad."
+            }
+            override fun onBeginningOfSpeech() = Unit
+            override fun onRmsChanged(rmsdB: Float) = Unit
+            override fun onBufferReceived(buffer: ByteArray?) = Unit
+            override fun onEndOfSpeech() {
+                recording = false
+                recognitionMessage = "Procesando transcripción…"
+            }
+            override fun onError(error: Int) {
+                recording = false
+                recognitionMessage = when (error) {
+                    SpeechRecognizer.ERROR_NO_MATCH -> "No pude entenderte. Intenta hablar un poco más despacio."
+                    SpeechRecognizer.ERROR_NETWORK,
+                    SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "No hay conexión para transcribir. Inténtalo de nuevo."
+                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Activa el permiso del micrófono para usar esta función."
+                    else -> "No fue posible transcribir. Puedes escribir la nota manualmente."
+                }
+            }
+            override fun onResults(results: Bundle?) {
+                recording = false
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                transcript = matches?.firstOrNull().orEmpty()
+                recognitionMessage = if (transcript.isBlank()) {
+                    "No se detectó texto. Puedes escribirlo manualmente."
+                } else {
+                    "Transcripción lista. Revísala antes de guardarla."
+                }
+            }
+            override fun onPartialResults(partialResults: Bundle?) {
+                partialResults
+                    ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    ?.firstOrNull()
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { transcript = it }
+            }
+            override fun onEvent(eventType: Int, params: Bundle?) = Unit
+        })
+        onDispose { speechRecognizer?.destroy() }
+    }
+
+    fun beginRecognition() {
+        if (speechRecognizer == null) {
+            recognitionMessage = "Este dispositivo no tiene un servicio de reconocimiento de voz."
+            return
+        }
+        transcript = ""
+        recording = true
+        speechRecognizer.startListening(
+            Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("es", "MX").toLanguageTag())
+                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                putExtra(RecognizerIntent.EXTRA_PROMPT, "Describe tu reto")
+            },
+        )
+    }
+
+    val microphonePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) beginRecognition()
+        else recognitionMessage = "Sin permiso de micrófono puedes escribir tu nota manualmente."
+    }
+
+    fun toggleRecording() {
         if (recording) {
-            delay(3000)
+            speechRecognizer?.stopListening()
             recording = false
+        } else if (
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            beginRecognition()
+        } else {
+            microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
@@ -82,7 +184,7 @@ fun VoiceScreen() {
                 ) {
                     Text("Presiona y habla sobre tus dificultades", color = MutedText, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     Surface(
-                        onClick = { recording = !recording },
+                        onClick = { toggleRecording() },
                         modifier = Modifier
                             .padding(top = 14.dp)
                             .size(80.dp),
@@ -118,8 +220,55 @@ fun VoiceScreen() {
                         }
                         Text("Escuchando...", color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     } else {
-                        Text("o selecciona tus retos abajo", color = MutedText, fontSize = 11.sp, modifier = Modifier.padding(top = 10.dp))
+                        Text(recognitionMessage, color = MutedText, fontSize = 11.sp, modifier = Modifier.padding(top = 10.dp))
                     }
+                    OutlinedTextField(
+                        value = transcript,
+                        onValueChange = { transcript = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        label = { Text("Nota transcrita o escrita") },
+                        placeholder = { Text("Ejemplo: terminar mi proyecto antes del viernes") },
+                        minLines = 2,
+                    )
+                    if (transcript.isNotBlank()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    onSaveNote(transcript.trim())
+                                    recognitionMessage = "Nota guardada en este dispositivo y en su copia de seguridad."
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Guardar nota")
+                            }
+                            Button(
+                                onClick = { onCreateMission(transcript.trim()) },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Crear misión")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (savedNotes.isNotEmpty()) {
+            item { SectionLabel("Notas recientes") }
+            items(savedNotes.take(3)) { note ->
+                ScreenCard {
+                    Text(
+                        note,
+                        modifier = Modifier.padding(14.dp),
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                    )
                 }
             }
         }

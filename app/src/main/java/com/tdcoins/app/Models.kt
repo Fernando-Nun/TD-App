@@ -10,6 +10,17 @@ data class Mission(
     val progress: Int,
     val coins: Int,
     val completed: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+data class AppSnapshot(
+    val coins: Int = 45,
+    val pomodorosDone: Int = 0,
+    val missions: List<Mission> = initialMissions(),
+    val purchasedIds: List<String> = emptyList(),
+    val streakDays: Int = 0,
+    val lastActiveDate: String = "",
+    val voiceNotes: List<String> = emptyList(),
 )
 
 enum class MissionCategory(val label: String, val color: androidx.compose.ui.graphics.Color) {

@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -154,6 +156,33 @@ fun BottomNavigation(active: AppTab, onNavigate: (AppTab) -> Unit) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SideNavigation(active: AppTab, onNavigate: (AppTab) -> Unit) {
+    val tabs = listOf(
+        AppTab.HOME to (Icons.Filled.Home to "Inicio"),
+        AppTab.POMODORO to (Icons.Filled.Timer to "Pomodoro"),
+        AppTab.MISSIONS to (Icons.Filled.Checklist to "Misiones"),
+        AppTab.STORE to (Icons.Filled.ShoppingBag to "Tienda"),
+        AppTab.VOICE to (Icons.Filled.Mic to "Mi perfil"),
+    )
+    NavigationRail(containerColor = Color.White) {
+        Spacer(modifier = Modifier.height(12.dp))
+        tabs.forEach { (tab, iconAndLabel) ->
+            NavigationRailItem(
+                selected = active == tab,
+                onClick = { onNavigate(tab) },
+                icon = {
+                    Icon(
+                        imageVector = iconAndLabel.first,
+                        contentDescription = iconAndLabel.second,
+                    )
+                },
+                label = { Text(iconAndLabel.second, fontSize = 10.sp) },
+            )
         }
     }
 }

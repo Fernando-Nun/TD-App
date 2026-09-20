@@ -35,5 +35,28 @@ app/build/outputs/apk/debug/app-debug.apk
 - Jetpack Compose
 - Material 3
 - Gradle Kotlin DSL
+- SpeechRecognizer de Android para transcripción
+- SharedPreferences + Android Auto Backup para persistencia y respaldo
+
+## Funciones implementadas
+
+- Misiones personalizadas con progreso y recompensas
+- Pomodoro con persistencia de estadísticas
+- Rachas diarias y notificaciones de progreso
+- Dictado de notas, edición y conversión directa a misión
+- Respaldo/restauración del estado mediante los servicios de copia de Android
+- Navegación adaptable para teléfonos y tabletas
+- Etiquetas y semántica para tecnologías de asistencia
+
+## Documentación y pruebas
+
+- [Proceso y decisiones de desarrollo](docs/DEVELOPMENT.md)
+- [Plan de pruebas](docs/TEST_PLAN.md)
+
+Ejecutar pruebas y generar APK:
+
+```bash
+./gradlew testDebugUnitTest assembleDebug
+```
 
 No utiliza React, TypeScript, Java ni layouts XML para la interfaz.

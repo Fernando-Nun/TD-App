@@ -1,6 +1,12 @@
 package com.tdcoins.app
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -12,59 +18,63 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import java.time.LocalDate
 import kotlin.math.ceil
-
-private val MissionListSaver = listSaver<List<Mission>, String>(
-    save = { missions ->
-        missions.map { mission ->
-            listOf(
-                mission.id,
-                Uri.encode(mission.title),
-                mission.category.name,
-                mission.target.toString(),
-                mission.progress.toString(),
-                mission.coins.toString(),
-                mission.completed.toString(),
-            ).joinToString("|")
-        }
-    },
-    restore = { entries ->
-        entries.mapNotNull { entry ->
-            val parts = entry.split("|")
-            if (parts.size != 7) return@mapNotNull null
-            runCatching {
-                Mission(
-                    id = parts[0],
-                    title = Uri.decode(parts[1]),
-                    category = MissionCategory.valueOf(parts[2]),
-                    target = parts[3].toInt(),
-                    progress = parts[4].toInt(),
-                    coins = parts[5].toInt(),
-                    completed = parts[6].toBoolean(),
-                )
-            }.getOrNull()
-        }.ifEmpty { initialMissions() }
-    },
-)
 
 @Composable
 fun TDCoinsApp() {
+    val context = LocalContext.current
+    val persistence = remember { AppPersistence(context) }
+    val initial = remember { persistence.load() }
     var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
-    var coins by rememberSaveable { mutableIntStateOf(45) }
-    var pomodorosDone by rememberSaveable { mutableIntStateOf(0) }
-    var missions by rememberSaveable(stateSaver = MissionListSaver) { mutableStateOf(initialMissions()) }
-    var purchasedIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var coins by remember { mutableIntStateOf(initial.coins) }
+    var pomodorosDone by remember { mutableIntStateOf(initial.pomodorosDone) }
+    var missions by remember { mutableStateOf(initial.missions) }
+    var purchasedIds by remember { mutableStateOf(initial.purchasedIds) }
+    var streakDays by remember { mutableIntStateOf(initial.streakDays) }
+    var lastActiveDate by remember { mutableStateOf(initial.lastActiveDate) }
+    var voiceNotes by remember { mutableStateOf(initial.voiceNotes) }
     var pomodoroIsWork by rememberSaveable { mutableStateOf(true) }
     var pomodoroSeconds by rememberSaveable { mutableIntStateOf(25 * 60) }
     var pomodoroRunning by rememberSaveable { mutableStateOf(false) }
     var pomodoroSessions by rememberSaveable { mutableIntStateOf(0) }
     var pomodoroDeadline by rememberSaveable { mutableLongStateOf(0L) }
     var showPomodoroCelebration by rememberSaveable { mutableStateOf(false) }
+
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {}
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    fun registerActivity() {
+        val today = LocalDate.now()
+        val updated = updateStreak(streakDays, lastActiveDate, today)
+        streakDays = updated.days
+        lastActiveDate = updated.activeDate
+    }
+
+    LaunchedEffect(coins, pomodorosDone, missions, purchasedIds, streakDays, lastActiveDate, voiceNotes) {
+        persistence.save(
+            AppSnapshot(
+                coins = coins,
+                pomodorosDone = pomodorosDone,
+                missions = missions,
+                purchasedIds = purchasedIds,
+                streakDays = streakDays,
+                lastActiveDate = lastActiveDate,
+                voiceNotes = voiceNotes,
+            ),
+        )
+    }
 
     LaunchedEffect(pomodoroRunning, pomodoroDeadline) {
         while (pomodoroRunning) {
@@ -78,6 +88,12 @@ fun TDCoinsApp() {
                     pomodoroSessions += 1
                     pomodorosDone += 1
                     coins += 10
+                    registerActivity()
+                    AppNotifications.showProgress(
+                        context,
+                        "¡Pomodoro completado!",
+                        "Ganaste 10 TD-Coins. Tu racha es de $streakDays día(s).",
+                    )
                     showPomodoroCelebration = true
                     pomodoroIsWork = false
                     pomodoroSeconds = 5 * 60
@@ -98,21 +114,28 @@ fun TDCoinsApp() {
         }
     }
 
-    Scaffold(
-        containerColor = Background,
-        topBar = { AppHeader(coins) },
-        bottomBar = { BottomNavigation(tab) { tab = it } },
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            when (tab) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val wideLayout = maxWidth >= 700.dp
+        Scaffold(
+            containerColor = Background,
+            topBar = { AppHeader(coins) },
+            bottomBar = {
+                if (!wideLayout) BottomNavigation(tab) { tab = it }
+            },
+        ) { padding ->
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+            ) {
+                if (wideLayout) SideNavigation(tab) { tab = it }
+                Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                    when (tab) {
                 AppTab.HOME -> HomeScreen(
                     coins = coins,
                     pomodorosDone = pomodorosDone,
                     completedMissions = missions.count { it.completed },
+                    streakDays = streakDays,
                     onNavigate = { tab = it },
                 )
                 AppTab.POMODORO -> PomodoroScreen(
@@ -149,7 +172,15 @@ fun TDCoinsApp() {
                 AppTab.MISSIONS -> MissionsScreen(
                     missions = missions,
                     onMissionsChange = { missions = it },
-                    onReward = { coins += it },
+                    onReward = {
+                        coins += it
+                        registerActivity()
+                        AppNotifications.showProgress(
+                            context,
+                            "¡Misión completada!",
+                            "Ganaste $it TD-Coins y mantienes una racha de $streakDays día(s).",
+                        )
+                    },
                 )
                 AppTab.STORE -> StoreScreen(
                     coins = coins,
@@ -161,7 +192,27 @@ fun TDCoinsApp() {
                         }
                     },
                 )
-                AppTab.VOICE -> VoiceScreen()
+                AppTab.VOICE -> VoiceScreen(
+                    savedNotes = voiceNotes,
+                    onSaveNote = { note ->
+                        voiceNotes = (listOf(note) + voiceNotes).distinct().take(20)
+                    },
+                    onCreateMission = { title ->
+                        missions = listOf(
+                            Mission(
+                                id = "voice-${System.currentTimeMillis()}",
+                                title = title,
+                                category = MissionCategory.FOCUS,
+                                target = 1,
+                                progress = 0,
+                                coins = 25,
+                            ),
+                        ) + missions
+                        tab = AppTab.MISSIONS
+                    },
+                )
+                    }
+                }
             }
         }
     }
