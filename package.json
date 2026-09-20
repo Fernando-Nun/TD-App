@@ -1,0 +1,14 @@
+{
+  "name": "td-coins-sync",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "db:migrate": "node server/migrate.js",
+    "test:server": "node --test server/*.test.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  }
+}

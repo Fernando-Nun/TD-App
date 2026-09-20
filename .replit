@@ -1,4 +1,32 @@
-modules = ["bash", "java-graalvm22.3"]
+modules = ["bash", "java-graalvm22.3", "nodejs-22", "postgresql-16"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip", "gradle"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend API"
+
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

@@ -1,1 +1,1 @@
-- [Android build validation](android-build-validation.md) — Replit lacks a ready Android SDK; validation uses a temporary official SDK while Android Studio supplies its own.
+- [Android build validation](android-build-validation.md) — Replit needs a temporary Android SDK and JDK 17 for reliable command-line validation.

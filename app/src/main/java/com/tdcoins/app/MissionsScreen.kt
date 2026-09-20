@@ -54,7 +54,7 @@ import kotlinx.coroutines.delay
 fun MissionsScreen(
     missions: List<Mission>,
     onMissionsChange: (List<Mission>) -> Unit,
-    onReward: (Int) -> Unit,
+    onReward: (Mission) -> Unit,
 ) {
     var showAdd by remember { mutableStateOf(false) }
     var celebratedId by remember { mutableStateOf<String?>(null) }
@@ -65,12 +65,14 @@ fun MissionsScreen(
         val completed = nextProgress >= mission.target
         onMissionsChange(
             missions.map {
-                if (it.id == mission.id) it.copy(progress = nextProgress, completed = completed) else it
+                if (it.id == mission.id) {
+                    it.copy(progress = nextProgress, completed = completed, updatedAt = System.currentTimeMillis())
+                } else it
             },
         )
         if (completed) {
             celebratedId = mission.id
-            onReward(mission.coins)
+            onReward(mission)
         }
     }
 

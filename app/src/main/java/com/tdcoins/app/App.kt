@@ -17,28 +17,75 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.math.ceil
 
 @Composable
 fun TDCoinsApp() {
     val context = LocalContext.current
     val persistence = remember { AppPersistence(context) }
-    val initial = remember { persistence.load() }
+    val syncClient = remember { SyncClient(persistence) }
+    val scope = rememberCoroutineScope()
+    var signedIn by remember { mutableStateOf(persistence.sessionToken() != null) }
+    var authenticating by remember { mutableStateOf(false) }
+    var authError by remember { mutableStateOf<String?>(null) }
+
+    if (!signedIn) {
+        AuthScreen(authenticating, authError) { email, password, register ->
+            scope.launch {
+                authenticating = true
+                authError = null
+                syncClient.authenticate(email, password, register)
+                    .onSuccess { signedIn = true }
+                    .onFailure { authError = it.message ?: "No se pudo iniciar sesión." }
+                authenticating = false
+            }
+        }
+        return
+    }
+    TDCoinsContent(persistence, syncClient) {
+        syncClient.signOut()
+        signedIn = false
+    }
+}
+
+@Composable
+private fun TDCoinsContent(
+    persistence: AppPersistence,
+    syncClient: SyncClient,
+    onSignOut: () -> Unit,
+) {
+    val context = LocalContext.current
+    val initial = remember {
+        persistence.load().let { snapshot ->
+            if (snapshot.economyEvents.isEmpty() && snapshot.coins != 45) {
+                snapshot.copy(
+                    economyEvents = listOf(EconomyEvent("migration-${UUID.randomUUID()}", snapshot.coins - 45)),
+                )
+            } else snapshot
+        }
+    }
     var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
     var coins by remember { mutableIntStateOf(initial.coins) }
     var pomodorosDone by remember { mutableIntStateOf(initial.pomodorosDone) }
+    var pomodoroBaseline by remember { mutableIntStateOf(initial.pomodoroBaseline) }
     var missions by remember { mutableStateOf(initial.missions) }
     var purchasedIds by remember { mutableStateOf(initial.purchasedIds) }
     var streakDays by remember { mutableIntStateOf(initial.streakDays) }
     var lastActiveDate by remember { mutableStateOf(initial.lastActiveDate) }
     var voiceNotes by remember { mutableStateOf(initial.voiceNotes) }
+    var economyEvents by remember { mutableStateOf(initial.economyEvents) }
+    var syncStatus by remember { mutableStateOf("Sincronizando…") }
     var pomodoroIsWork by rememberSaveable { mutableStateOf(true) }
     var pomodoroSeconds by rememberSaveable { mutableIntStateOf(25 * 60) }
     var pomodoroRunning by rememberSaveable { mutableStateOf(false) }
@@ -62,18 +109,57 @@ fun TDCoinsApp() {
         lastActiveDate = updated.activeDate
     }
 
-    LaunchedEffect(coins, pomodorosDone, missions, purchasedIds, streakDays, lastActiveDate, voiceNotes) {
-        persistence.save(
-            AppSnapshot(
-                coins = coins,
-                pomodorosDone = pomodorosDone,
-                missions = missions,
-                purchasedIds = purchasedIds,
-                streakDays = streakDays,
-                lastActiveDate = lastActiveDate,
-                voiceNotes = voiceNotes,
-            ),
-        )
+    fun applySnapshot(snapshot: AppSnapshot) {
+        coins = snapshot.coins
+        pomodorosDone = snapshot.pomodorosDone
+        pomodoroBaseline = snapshot.pomodoroBaseline
+        missions = snapshot.missions
+        purchasedIds = snapshot.purchasedIds
+        streakDays = snapshot.streakDays
+        lastActiveDate = snapshot.lastActiveDate
+        voiceNotes = snapshot.voiceNotes
+        economyEvents = snapshot.economyEvents
+    }
+
+    fun currentSnapshot() = AppSnapshot(
+        coins = coins,
+        pomodorosDone = pomodorosDone,
+        pomodoroBaseline = pomodoroBaseline,
+        missions = missions,
+        purchasedIds = purchasedIds,
+        streakDays = streakDays,
+        lastActiveDate = lastActiveDate,
+        voiceNotes = voiceNotes,
+        economyEvents = economyEvents,
+    )
+
+    fun addCoins(delta: Int, eventId: String) {
+        if (economyEvents.any { it.id == eventId }) return
+        economyEvents = economyEvents + EconomyEvent(eventId, delta)
+        coins += delta
+    }
+
+    val latestSnapshot by rememberUpdatedState(currentSnapshot())
+
+    LaunchedEffect(coins, pomodorosDone, missions, purchasedIds, streakDays, lastActiveDate, voiceNotes, economyEvents) {
+        persistence.save(currentSnapshot())
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            syncClient.sync(latestSnapshot)
+                .onSuccess {
+                    applySnapshot(mergeSnapshots(latestSnapshot, it))
+                    syncStatus = "Sincronizado"
+                }
+                .onFailure {
+                    syncStatus = if (it.message?.contains("sesión", ignoreCase = true) == true) {
+                        onSignOut()
+                        "Sesión caducada"
+                    } else "Sin conexión · cambios guardados"
+                }
+            delay(10_000)
+        }
     }
 
     LaunchedEffect(pomodoroRunning, pomodoroDeadline) {
@@ -87,7 +173,7 @@ fun TDCoinsApp() {
                 if (pomodoroIsWork) {
                     pomodoroSessions += 1
                     pomodorosDone += 1
-                    coins += 10
+                    addCoins(10, "pomodoro-${UUID.randomUUID()}")
                     registerActivity()
                     AppNotifications.showProgress(
                         context,
@@ -118,7 +204,7 @@ fun TDCoinsApp() {
         val wideLayout = maxWidth >= 700.dp
         Scaffold(
             containerColor = Background,
-            topBar = { AppHeader(coins) },
+            topBar = { AppHeader(coins, syncStatus, onSignOut) },
             bottomBar = {
                 if (!wideLayout) BottomNavigation(tab) { tab = it }
             },
@@ -172,13 +258,13 @@ fun TDCoinsApp() {
                 AppTab.MISSIONS -> MissionsScreen(
                     missions = missions,
                     onMissionsChange = { missions = it },
-                    onReward = {
-                        coins += it
+                    onReward = { mission ->
+                        addCoins(mission.coins, "mission-reward-${mission.id}")
                         registerActivity()
                         AppNotifications.showProgress(
                             context,
                             "¡Misión completada!",
-                            "Ganaste $it TD-Coins y mantienes una racha de $streakDays día(s).",
+                            "Ganaste ${mission.coins} TD-Coins y mantienes una racha de $streakDays día(s).",
                         )
                     },
                 )
@@ -187,7 +273,7 @@ fun TDCoinsApp() {
                     purchasedIds = purchasedIds,
                     onPurchase = { item ->
                         if (coins >= item.price && item.id !in purchasedIds) {
-                            coins -= item.price
+                            addCoins(-item.price, "purchase-${item.id}")
                             purchasedIds = purchasedIds + item.id
                         }
                     },

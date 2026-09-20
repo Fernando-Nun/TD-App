@@ -14,6 +14,10 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        val syncApiUrl = providers.environmentVariable("SYNC_API_URL")
+            .orElse(providers.environmentVariable("REPLIT_DEV_DOMAIN").map { "https://$it" })
+            .getOrElse("")
+        buildConfigField("String", "SYNC_API_URL", "\"$syncApiUrl\"")
     }
 
     buildTypes {
@@ -37,6 +41,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

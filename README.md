@@ -36,7 +36,7 @@ app/build/outputs/apk/debug/app-debug.apk
 - Material 3
 - Gradle Kotlin DSL
 - SpeechRecognizer de Android para transcripción
-- SharedPreferences + Android Auto Backup para persistencia y respaldo
+- SharedPreferences para modo sin conexión + API PostgreSQL para sincronización
 
 ## Funciones implementadas
 
@@ -45,6 +45,7 @@ app/build/outputs/apk/debug/app-debug.apk
 - Rachas diarias y notificaciones de progreso
 - Dictado de notas, edición y conversión directa a misión
 - Respaldo/restauración del estado mediante los servicios de copia de Android
+- Inicio de sesión y sincronización entre dispositivos con reconciliación sin duplicar recompensas
 - Navegación adaptable para teléfonos y tabletas
 - Etiquetas y semántica para tecnologías de asistencia
 
@@ -59,4 +60,18 @@ Ejecutar pruebas y generar APK:
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-No utiliza React, TypeScript, Java ni layouts XML para la interfaz.
+## Servidor de sincronización
+
+El servicio se ejecuta con `npm start` y requiere `DATABASE_URL` y
+`SESSION_SECRET` en secretos. Para compilar la app contra un servidor publicado:
+
+```bash
+SYNC_API_URL=https://tu-servidor.example ./gradlew assembleDebug
+```
+
+No se incluyen credenciales en el repositorio.
+
+El esquema de desarrollo está versionado en `server/schema.sql`. En Replit, el
+esquema ya aplicado a la base de desarrollo se propaga a producción mediante
+Publish. Para preparar una base de desarrollo vacía se puede ejecutar
+`npm run db:migrate`.
