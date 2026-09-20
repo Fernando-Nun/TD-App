@@ -1,15 +1,19 @@
 {
-  "name": "td-coins-sync",
-  "private": true,
-  "type": "module",
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
   "scripts": {
-    "start": "node server/index.js",
-    "db:migrate": "node server/migrate.js",
-    "test:server": "node --test server/*.test.js"
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
+  "private": true,
   "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3",
-    "express": "^5.2.1",
-    "pg": "^8.23.0"
+    "@replit/connectors-sdk": "^0.4.3"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3"
   }
 }
