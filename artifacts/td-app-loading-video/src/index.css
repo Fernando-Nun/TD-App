@@ -118,21 +118,6 @@ body {
   background: linear-gradient(90deg, rgba(43, 169, 155, 0.12), #2ba99b 50%, rgba(112, 70, 201, 0.48));
 }
 
-.td-converging-element {
-  transform-origin: center;
-  will-change: transform, opacity;
-}
-
-.td-converging-violet {
-  background: #7046c9;
-  box-shadow: 0 0 0 0.45vmin rgba(112, 70, 201, 0.08);
-}
-
-.td-converging-teal {
-  background: #2ba99b;
-  box-shadow: 0 0 0 0.45vmin rgba(43, 169, 155, 0.08);
-}
-
 .td-edge-mark {
   border: 1px solid rgba(112, 70, 201, 0.14);
   border-radius: 50%;
@@ -160,61 +145,49 @@ body {
   width: 1px;
 }
 
-.td-logo-sketch {
-  filter: grayscale(1) contrast(1.65) brightness(0.92);
-  opacity: 0.5;
-  transform: rotate(-1deg);
+.td-edge-corner {
+  border-left: 1px solid rgba(43, 169, 155, 0.18);
+  border-right: 1px solid rgba(112, 70, 201, 0.12);
+  opacity: 0.68;
 }
 
-.td-logo-trace {
-  border: 1px dashed rgba(112, 70, 201, 0.28);
-  box-shadow: 0 0 0 0.7vmin rgba(43, 169, 155, 0.06);
+.td-edge-corner::before,
+.td-edge-corner::after {
+  content: '';
+  position: absolute;
+  height: 1px;
+  width: 3vmin;
 }
 
-.td-logo-final {
-  opacity: 0;
+.td-edge-corner::before {
+  background: rgba(112, 70, 201, 0.22);
+  left: -1vmin;
+  top: 0;
+}
+
+.td-edge-corner::after {
+  background: rgba(43, 169, 155, 0.2);
+  bottom: 0;
+  right: -1vmin;
+}
+
+.td-logo-fragment {
   transform-origin: center;
-  will-change: transform, opacity, clip-path, filter;
-  filter: drop-shadow(0 2.5vmin 4vmin rgba(58, 36, 112, 0.16));
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.td-logo-fragment img {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
 }
 
 .td-logo-highlight {
   border: 1px solid rgba(255, 255, 255, 0.8);
   background: radial-gradient(circle, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.02) 58%, transparent 72%);
   filter: blur(1px);
-}
-
-@keyframes td-logo-reveal {
-  0% {
-    clip-path: inset(0 0 100% 0);
-    opacity: 0.02;
-    transform: scale(0.93);
-    filter: grayscale(1) brightness(1.2) drop-shadow(0 0 0 rgba(112, 70, 201, 0));
-  }
-  48% {
-    clip-path: inset(0 0 92% 0);
-    opacity: 0.06;
-    transform: scale(0.96);
-    filter: grayscale(0.75) brightness(1.1) drop-shadow(0 0 0 rgba(112, 70, 201, 0));
-  }
-  72% {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
-    transform: scale(1);
-    filter: grayscale(0) brightness(1) drop-shadow(0 2.5vmin 4vmin rgba(58, 36, 112, 0.16));
-  }
-  86% {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
-    transform: scale(1.015);
-    filter: grayscale(0) brightness(1.08) drop-shadow(0 2.5vmin 4.8vmin rgba(112, 70, 201, 0.3));
-  }
-  100% {
-    clip-path: inset(0 0 100% 0);
-    opacity: 0.02;
-    transform: scale(0.93);
-    filter: grayscale(1) brightness(1.2) drop-shadow(0 0 0 rgba(112, 70, 201, 0));
-  }
 }
 
 .video-media-frame {
