@@ -10,6 +10,7 @@ Aplicación Android nativa para enfoque, hábitos y organización, acompañada p
 - `./gradlew testDebugUnitTest assembleDebug` — valida Android y genera el APK
 - Variables requeridas: `DATABASE_URL` y `SESSION_SECRET`
 - Variable opcional: `PASSWORD_RESET_FROM`
+- Variable opcional: `PASSWORD_RESET_APP_URL` (URL pública usada para el logo de los correos)
 
 ## Stack
 

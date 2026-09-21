@@ -208,6 +208,9 @@ async function createSession(userId) {
 }
 
 async function sendPasswordResetEmail(email, code) {
+  const appUrl = (process.env.PASSWORD_RESET_APP_URL || "https://td-app.replit.app").replace(/\/+$/, "");
+  const logoUrl = `${appUrl}/assets/td-coins-email-logo.png`;
+  const safeCode = escapeHtml(code);
   const response = await connectors.proxy("resend", "/emails", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -215,12 +218,114 @@ async function sendPasswordResetEmail(email, code) {
       from: process.env.PASSWORD_RESET_FROM || "TD-Coins <onboarding@resend.dev>",
       to: [email],
       subject: "Código para recuperar tu cuenta de TD-Coins",
-      html: `<p>Tu código de recuperación es:</p><p style="font-size:24px;font-weight:bold;letter-spacing:2px">${code}</p><p>Caduca en 15 minutos y solo puede usarse una vez.</p><p>Si no solicitaste este cambio, ignora este mensaje.</p>`,
+      text: [
+        "TD-Coins",
+        "",
+        "Recibimos una solicitud para recuperar tu cuenta.",
+        `Tu código es: ${code}`,
+        "Caduca en 15 minutos y solo puede usarse una vez.",
+        "",
+        "Abre TD-App para introducirlo. Si no solicitaste este cambio, puedes ignorar este correo.",
+      ].join("\n"),
+      html: `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Recupera tu cuenta de TD-Coins</title>
+    <style>
+      @media only screen and (max-width: 620px) {
+        .email-shell { padding: 18px 10px !important; }
+        .email-card { border-radius: 18px !important; }
+        .email-content { padding: 28px 22px !important; }
+        .code-value { font-size: 30px !important; letter-spacing: 7px !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;background:#f5f0ff;color:#21123b;font-family:Arial,Helvetica,sans-serif;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      Tu código de recuperación de TD-Coins caduca en 15 minutos.
+    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f0ff;">
+      <tr>
+        <td class="email-shell" align="center" style="padding:42px 16px;">
+          <table role="presentation" class="email-card" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;background:#ffffff;border:1px solid #e5dafa;border-radius:24px;overflow:hidden;box-shadow:0 16px 42px rgba(74,40,131,.12);">
+            <tr>
+              <td style="height:6px;background:linear-gradient(90deg,#7c3aed 0%,#a855f7 54%,#14b8a6 100%);font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="email-content" style="padding:34px 42px 38px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td align="center">
+                      <img src="${logoUrl}" width="76" height="76" alt="Logo de TD-Coins" style="display:block;width:76px;height:76px;border:0;border-radius:22px;" />
+                      <div style="padding-top:14px;color:#21123b;font-size:20px;font-weight:700;letter-spacing:-.3px;">TD-Coins</div>
+                      <div style="padding-top:5px;color:#786a91;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Pequeños pasos, grandes avances</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:34px;">
+                      <div style="color:#21123b;font-size:27px;line-height:1.18;font-weight:700;letter-spacing:-.5px;">Recupera tu cuenta</div>
+                      <div style="padding-top:13px;color:#66577d;font-size:16px;line-height:1.6;">Recibimos una solicitud para cambiar tu contraseña. Abre TD-App y utiliza este código:</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:24px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3edff;border:1px solid #e0d0ff;border-radius:18px;">
+                        <tr>
+                          <td align="center" style="padding:22px 14px 20px;">
+                            <div style="color:#816e9c;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;">Código de recuperación</div>
+                            <div class="code-value" style="padding-top:10px;color:#6d28d9;font-size:36px;line-height:1;font-weight:700;letter-spacing:9px;">${safeCode}</div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:24px;">
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td valign="top" style="padding:2px 11px 0 0;color:#14a896;font-size:17px;">●</td>
+                          <td style="color:#66577d;font-size:14px;line-height:1.55;">Caduca en <strong style="color:#33204f;">15 minutos</strong> y solo puede utilizarse una vez.</td>
+                        </tr>
+                        <tr>
+                          <td valign="top" style="padding:10px 11px 0 0;color:#14a896;font-size:17px;">●</td>
+                          <td style="padding-top:8px;color:#66577d;font-size:14px;line-height:1.55;">Si no solicitaste este cambio, ignora el correo. Tu cuenta seguirá protegida.</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:32px;border-top:1px solid #eee8f8;">
+                      <div style="color:#8a7b9f;font-size:12px;line-height:1.6;">Este mensaje fue enviado automáticamente. No compartas tu código con nadie.</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <div style="max-width:520px;padding:22px 12px 0;color:#988eaa;font-size:12px;line-height:1.5;text-align:center;">TD-Coins · Enfócate en lo que importa, un paso a la vez.</div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
     },
   });
   if (!response.ok) {
     throw new Error(`Resend returned ${response.status}: ${await response.text()}`);
   }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[character]));
 }
 
 async function consumeResetLimit(client, scope, maximum) {
