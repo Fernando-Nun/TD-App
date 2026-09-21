@@ -211,23 +211,20 @@ async function sendPasswordResetEmail(email, code) {
   const appUrl = (process.env.PASSWORD_RESET_APP_URL || "https://td-app.replit.app").replace(/\/+$/, "");
   const logoUrl = `${appUrl}/assets/td-coins-email-logo.png`;
   const safeCode = escapeHtml(code);
-  const response = await connectors.proxy("resend", "/emails", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: {
-      from: process.env.PASSWORD_RESET_FROM || "TD-Coins <onboarding@resend.dev>",
-      to: [email],
-      subject: "Código para recuperar tu cuenta de TD-Coins",
-      text: [
-        "TD-Coins",
-        "",
-        "Recibimos una solicitud para recuperar tu cuenta.",
-        `Tu código es: ${code}`,
-        "Caduca en 15 minutos y solo puede usarse una vez.",
-        "",
-        "Abre TD-App para introducirlo. Si no solicitaste este cambio, puedes ignorar este correo.",
-      ].join("\n"),
-      html: `<!doctype html>
+  const body = {
+    from: process.env.PASSWORD_RESET_FROM || "TD-Coins <onboarding@resend.dev>",
+    to: [email],
+    subject: "Código para recuperar tu cuenta de TD-Coins",
+    text: [
+      "TD-Coins",
+      "",
+      "Recibimos una solicitud para recuperar tu cuenta.",
+      `Tu código es: ${code}`,
+      "Caduca en 15 minutos y solo puede usarse una vez.",
+      "",
+      "Abre TD-App para introducirlo. Si no solicitaste este cambio, puedes ignorar este correo.",
+    ].join("\n"),
+    html: `<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -311,8 +308,21 @@ async function sendPasswordResetEmail(email, code) {
     </table>
   </body>
 </html>`,
-    },
-  });
+  };
+  const response = process.env.RESEND_API_KEY
+    ? await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+    : await connectors.proxy("resend", "/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
   if (!response.ok) {
     throw new Error(`Resend returned ${response.status}: ${await response.text()}`);
   }
