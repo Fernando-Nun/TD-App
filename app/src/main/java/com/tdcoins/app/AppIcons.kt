@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun CoinIcon(
@@ -71,7 +70,7 @@ fun PomodoroIcon(
     ) {
         val unit = size.minDimension
         val body = tint
-        val leaf = Color(0xFF16A34A)
+        val leaf = tint
         val center = Offset(size.width / 2f, size.height * 0.58f)
         drawOval(
             color = body,
