@@ -42,8 +42,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 
 @Composable
 fun CoinBadge(
@@ -78,7 +77,9 @@ fun AppHeader(coins: Int, syncStatus: String, onOpenReminders: () -> Unit, onSig
     Surface(
         color = Background,
         shadowElevation = 0.dp,
-        modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
+        modifier = Modifier
+            .statusBarsPadding()
+            .padding(top = 8.dp),
     ) {
         Row(
             modifier = Modifier
