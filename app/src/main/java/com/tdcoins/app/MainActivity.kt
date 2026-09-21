@@ -13,6 +13,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,10 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlin.math.cos
+import kotlin.math.sin
 
 class MainActivity : ComponentActivity() {
     private val notificationDestination = mutableStateOf<AppTab?>(null)
@@ -103,6 +108,24 @@ private fun LoadingSplash(onFinished: () -> Unit) {
         ),
         label = "glow-scale",
     )
+    val orbitRotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(7000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "orbit-rotation",
+    )
+    val barProgress by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "loading-bar",
+    )
 
     Box(
         modifier = Modifier
@@ -114,6 +137,10 @@ private fun LoadingSplash(onFinished: () -> Unit) {
             ),
         contentAlignment = Alignment.Center,
     ) {
+        LoadingOrbits(
+            rotation = orbitRotation,
+            modifier = Modifier.size(270.dp),
+        )
         Box(
             modifier = Modifier
                 .size(210.dp)
@@ -131,7 +158,80 @@ private fun LoadingSplash(onFinished: () -> Unit) {
         LoadingDots(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 72.dp),
+                .padding(bottom = 66.dp),
+        )
+        LoadingBar(
+            progress = barProgress,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 91.dp),
+        )
+    }
+}
+
+@Composable
+private fun LoadingOrbits(rotation: Float, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+        val outerRadius = size.minDimension * 0.43f
+        val innerRadius = size.minDimension * 0.34f
+        drawCircle(
+            color = Color(0xFF7C3AED).copy(alpha = 0.15f),
+            radius = outerRadius,
+            style = Stroke(width = 1.dp.toPx()),
+        )
+        drawCircle(
+            color = Color(0xFF14B8A6).copy(alpha = 0.12f),
+            radius = innerRadius,
+            style = Stroke(width = 1.dp.toPx()),
+        )
+        drawArc(
+            color = Color(0xFF7C3AED).copy(alpha = 0.42f),
+            startAngle = rotation,
+            sweepAngle = 78f,
+            useCenter = false,
+            topLeft = androidx.compose.ui.geometry.Offset(
+                center.x - outerRadius,
+                center.y - outerRadius,
+            ),
+            size = androidx.compose.ui.geometry.Size(outerRadius * 2f, outerRadius * 2f),
+            style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round),
+        )
+        val angle = Math.toRadians((rotation * 1.35f).toDouble())
+        drawCircle(
+            color = Color(0xFF14B8A6),
+            radius = 4.dp.toPx(),
+            center = androidx.compose.ui.geometry.Offset(
+                center.x + cos(angle).toFloat() * innerRadius,
+                center.y + sin(angle).toFloat() * innerRadius,
+            ),
+        )
+        val secondAngle = Math.toRadians((rotation + 175f).toDouble())
+        drawCircle(
+            color = Color(0xFFFBBF24),
+            radius = 3.dp.toPx(),
+            center = androidx.compose.ui.geometry.Offset(
+                center.x + cos(secondAngle).toFloat() * outerRadius,
+                center.y + sin(secondAngle).toFloat() * outerRadius,
+            ),
+        )
+    }
+}
+
+@Composable
+private fun LoadingBar(progress: Float, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(width = 94.dp, height = 4.dp)) {
+        drawRoundRect(
+            color = Color(0xFF7C3AED).copy(alpha = 0.12f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2f),
+        )
+        val fillWidth = size.width * 0.24f
+        val left = (size.width - fillWidth) * progress
+        drawRoundRect(
+            color = Color(0xFF14B8A6),
+            topLeft = androidx.compose.ui.geometry.Offset(left, 0f),
+            size = androidx.compose.ui.geometry.Size(fillWidth, size.height),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2f),
         )
     }
 }
