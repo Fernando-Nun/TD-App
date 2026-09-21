@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 
@@ -138,6 +139,7 @@ fun BottomNavigation(active: AppTab, onNavigate: (AppTab) -> Unit) {
         color = Color.White,
         modifier = Modifier
             .fillMaxWidth()
+            .navigationBarsPadding()
             .testTag("bottom-navigation"),
         shadowElevation = 8.dp,
     ) {

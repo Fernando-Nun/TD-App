@@ -66,7 +66,7 @@ fun PomodoroIcon(
 ) {
     Canvas(
         modifier = modifier.semantics {
-            this.contentDescription = contentDescription ?: ""
+            this.contentDescription = contentDescription
         },
     ) {
         val unit = size.minDimension
