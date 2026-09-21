@@ -1,1 +1,2 @@
 - [Compilación Android](android-build-environment.md) — comprobar la disponibilidad y ruta del SDK antes de depurar errores de Kotlin o Compose.
+- [Envío con Resend](resend-email-delivery.md) — si el conector de Replit no está vinculado al runtime, usar la API key segura como respaldo.
