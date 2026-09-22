@@ -143,7 +143,7 @@ function Home() {
           <div className="td-hero-actions">
             <DownloadLink testId="link-hero-download">
               <Download size={19} />
-              Descargar TD-App
+              Descargar APK
               <ArrowRight size={17} />
             </DownloadLink>
             <a
@@ -329,7 +329,7 @@ function Home() {
                 testId="link-final-download"
               >
                 <Download size={22} />
-                Descargar TD-App.apk
+                Descargar APK
               </DownloadLink>
               <div className="td-download-meta">
                 <span>Android · APK</span>
