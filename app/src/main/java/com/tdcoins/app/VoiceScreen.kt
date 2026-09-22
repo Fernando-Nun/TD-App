@@ -354,7 +354,6 @@ fun VoiceScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(11.dp),
             ) {
-                Text(challenge.icon, fontSize = 23.sp)
                 Column(modifier = Modifier.weight(1f)) {
                     Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     Text("Plan personalizado listo", color = MutedText, fontSize = 10.sp)
@@ -431,7 +430,7 @@ fun VoiceScreen(
                         }
                         .onFailure {
                             onChallengesChange(listOf(createPersonalChallenge(text)) + challenges)
-                            recognitionMessage = "No se pudo conectar con Gemini. Se creó un plan base; puedes intentarlo de nuevo más tarde."
+                            recognitionMessage = "Gemini está ocupado. Se creó un plan provisional adaptado a tu texto; puedes volver a intentarlo más tarde."
                             showAddChallenge = false
                         }
                     generatingPlan = false
@@ -517,8 +516,7 @@ private fun PersonalizedPlan(
             ScreenCard {
                 Column(modifier = Modifier.padding(15.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(challenge.icon, fontSize = 23.sp)
-                        Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(start = 8.dp))
+                        Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.Black)
                     }
                     Text(
                         "RECORDATORIOS ACTIVADOS",

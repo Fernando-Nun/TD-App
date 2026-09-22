@@ -1,2 +1,3 @@
 - [Compilación Android](android-build-environment.md) — comprobar la disponibilidad y ruta del SDK antes de depurar errores de Kotlin o Compose.
 - [Envío con Resend](resend-email-delivery.md) — si el conector de Replit no está vinculado al runtime, usar la API key segura como respaldo.
+- [Modelos Gemini disponibles](gemini-model-availability.md) — una clave nueva puede listar modelos retirados; seleccionar un Flash vigente y reintentar ante 404/503.

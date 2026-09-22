@@ -58,7 +58,7 @@ class SyncClient(private val persistence: AppPersistence) {
                 VoiceChallenge(
                     id = UUID.randomUUID().toString(),
                     text = text.trim(),
-                    icon = response.optString("icon", "🌱"),
+                    icon = "",
                     reminders = response.getJSONArray("reminders").toStringList(),
                     plan = response.getJSONArray("plan").toStringList(),
                 )

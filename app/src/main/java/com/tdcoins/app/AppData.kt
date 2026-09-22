@@ -6,20 +6,21 @@ fun initialMissions() = emptyList<Mission>()
 
 fun createPersonalChallenge(text: String): VoiceChallenge {
     val clean = text.trim()
+    val goal = clean.take(140).ifBlank { "tu reto" }
     return VoiceChallenge(
         id = UUID.randomUUID().toString(),
         text = clean,
-        icon = "🌱",
+        icon = "",
         reminders = listOf(
-            "Revisa tu objetivo al iniciar el día",
-            "Haz una acción pequeña antes de posponerlo",
-            "Celebra cada avance observable",
+            "Lee este objetivo al comenzar el día: \"$goal\"",
+            "Reserva 10 minutos para avanzar en \"$goal\"",
+            "Antes de terminar el día, anota qué hiciste sobre \"$goal\"",
         ),
         plan = listOf(
-            "Describe el resultado que quieres conseguir",
-            "Divide el objetivo en el paso más pequeño",
-            "Reserva un momento concreto para hacerlo",
-            "Revisa el avance y ajusta el siguiente paso",
+            "Escribe qué resultado concreto quieres lograr con \"$goal\"",
+            "Elige una primera acción de 10 minutos relacionada con \"$goal\"",
+            "Haz esa acción en un horario específico y registra el avance",
+            "Revisa lo que ocurrió y decide el siguiente paso para \"$goal\"",
         ),
     )
 }
@@ -91,86 +92,4 @@ fun storeItems() = listOf(
     ),
 )
 
-fun voiceChallenges() = emptyList<VoiceChallenge>() /* Built-in challenges were removed; user goals are generated in the profile. */
-/*
-    VoiceChallenge(
-        "sleep",
-        "Se me dificulta dormir",
-        "🌙",
-        listOf(
-            "Apaga pantallas 30 min antes de dormir",
-            "Recordatorio a las 9:30 PM: Rutina nocturna",
-            "Alarma suave a las 10:00 PM: Hora de descansar",
-        ),
-        listOf(
-            "Crea una rutina nocturna de 15 min",
-            "Usa luz tenue por la noche",
-            "Escribe 3 cosas buenas del día antes de dormir",
-            "Prueba respiración 4-7-8 para relajarte",
-        ),
-    ),
-    VoiceChallenge(
-        "focus",
-        "Se me dificulta poner atención",
-        "🎯",
-        listOf(
-            "Pomodoro activo: 25 min de enfoque puro",
-            "Silencia notificaciones durante el Pomodoro",
-            "Cada hora: levántate y muévete 2 minutos",
-        ),
-        listOf(
-            "Usa el método Pomodoro (25-5 min)",
-            "Elimina distracciones del escritorio",
-            "Escribe la tarea actual en un post-it",
-            "Escucha música sin letras mientras trabajas",
-        ),
-    ),
-    VoiceChallenge(
-        "finish",
-        "Inicio las cosas y no las termino",
-        "✅",
-        listOf(
-            "Recordatorio: ¿Terminaste la tarea de hoy?",
-            "Check-in a la mitad del día: ¿Cómo vas?",
-            "Celebra cada tarea terminada con una TD-Coin",
-        ),
-        listOf(
-            "Divide cada tarea en pasos de 10 min",
-            "Comprométete solo con UNA tarea a la vez",
-            "Usa la regla de los 2 minutos: si tarda poco, hazlo ya",
-            "Registra tu progreso visualmente",
-        ),
-    ),
-    VoiceChallenge(
-        "organize",
-        "Me cuesta organizarme",
-        "🗂️",
-        listOf(
-            "Cada mañana: revisa tus 3 prioridades del día",
-            "Recordatorio de planificación: Domingo 7 PM",
-            "Alerta: no olvides tu lista de tareas",
-        ),
-        listOf(
-            "Escribe tus tareas la noche anterior",
-            "Usa colores para priorizar tareas",
-            "Pon solo 3 tareas principales por día",
-            "Revisa tu lista cada mañana al despertar",
-        ),
-    ),
-    VoiceChallenge(
-        "impulsive",
-        "Soy muy impulsivo/a",
-        "⚡",
-        listOf(
-            "Antes de actuar: respira profundo 5 veces",
-            "Recordatorio: espera 10 min antes de decidir",
-            "Check emocional: ¿Cómo te sientes ahora?",
-        ),
-        listOf(
-            "Practica la pausa de 10 segundos",
-            "Escribe antes de responder algo importante",
-            "Identifica tus detonantes emocionales",
-            "Celebra cada vez que pauses antes de reaccionar",
-        ),
-    ),
-)*/
+fun voiceChallenges() = emptyList<VoiceChallenge>()

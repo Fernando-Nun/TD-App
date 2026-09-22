@@ -66,7 +66,6 @@ class AppPersistence(context: Context) {
                     put(JSONObject()
                         .put("id", challenge.id)
                         .put("text", challenge.text)
-                        .put("icon", challenge.icon)
                         .put("reminders", JSONArray(challenge.reminders))
                         .put("plan", JSONArray(challenge.plan))
                         .put("createdAt", challenge.createdAt)
@@ -161,7 +160,7 @@ class AppPersistence(context: Context) {
                 VoiceChallenge(
                     id = it.getString("id"),
                     text = it.optString("text"),
-                    icon = it.optString("icon", "🎯"),
+                    icon = "",
                     reminders = it.optJSONArray("reminders").toStrings(),
                     plan = it.optJSONArray("plan").toStrings(),
                     createdAt = it.optLong("createdAt", System.currentTimeMillis()),
