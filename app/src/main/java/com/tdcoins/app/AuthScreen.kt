@@ -1,5 +1,11 @@
 package com.tdcoins.app
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,7 +40,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,8 +59,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
-private enum class AuthMode { SIGN_IN, REQUEST_RESET, CONFIRM_RESET }
+private enum class AuthMode { SIGN_IN, CREATE_ACCOUNT, REQUEST_RESET, CONFIRM_RESET }
 
 @Composable
 fun AuthScreen(
@@ -67,6 +76,14 @@ fun AuthScreen(
     var password by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
     var mode by remember { mutableStateOf(AuthMode.SIGN_IN) }
+    var resendCooldownSeconds by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(resendCooldownSeconds) {
+        if (resendCooldownSeconds > 0) {
+            delay(1_000)
+            resendCooldownSeconds -= 1
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -146,253 +163,321 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(
-                        Brush.linearGradient(
-                            listOf(Foreground, Color(0xFF321451)),
-                        ),
-                    )
-                    .padding(horizontal = 20.dp, vertical = 18.dp),
-            ) {
-                MemphisCircle(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = 22.dp, y = (-28).dp)
-                        .size(90.dp),
-                    color = AccentOrange,
-                    alpha = 0.2f,
-                )
+            AnimatedContent(
+                targetState = mode,
+                transitionSpec = {
+                    if (targetState == AuthMode.SIGN_IN) {
+                        (slideInHorizontally { -it / 3 } + fadeIn()) togetherWith
+                            (slideOutHorizontally { it / 3 } + fadeOut())
+                    } else {
+                        (slideInHorizontally { it / 3 } + fadeIn()) togetherWith
+                            (slideOutHorizontally { -it / 3 } + fadeOut())
+                    }
+                },
+                label = "auth-form-transition",
+            ) { activeMode ->
                 Column {
-                    Text(
-                        "TU SIGUIENTE PEQUEÑO PASO",
-                        color = Color(0xFFF9A8D4),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.1.sp,
-                    )
-                    Text(
-                        when (mode) {
-                            AuthMode.SIGN_IN -> "Vuelve a tu ritmo."
-                            AuthMode.REQUEST_RESET -> "Recupera tu acceso."
-                            AuthMode.CONFIRM_RESET -> "Crea una nueva clave."
-                        },
-                        color = Color.White,
-                        fontSize = 27.sp,
-                        lineHeight = 31.sp,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                    Text(
-                        when (mode) {
-                            AuthMode.SIGN_IN -> "Sincroniza tus avances y continúa donde lo dejaste."
-                            AuthMode.REQUEST_RESET -> "Te ayudaremos a volver a entrar a tu cuenta."
-                            AuthMode.CONFIRM_RESET -> "Escribe el código que recibiste y sigue adelante."
-                        },
-                        color = Color.White.copy(alpha = 0.78f),
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        modifier = Modifier.padding(top = 5.dp),
-                    )
-                }
-            }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(Foreground, Color(0xFF321451)),
+                                ),
+                            )
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                    ) {
+                        MemphisCircle(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(x = 22.dp, y = (-28).dp)
+                                .size(90.dp),
+                            color = AccentOrange,
+                            alpha = 0.2f,
+                        )
+                        Column {
+                            Text(
+                                "TU SIGUIENTE PEQUEÑO PASO",
+                                color = Color(0xFFF9A8D4),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.1.sp,
+                            )
+                            Text(
+                                when (activeMode) {
+                                    AuthMode.SIGN_IN -> "Vuelve a tu ritmo."
+                                    AuthMode.CREATE_ACCOUNT -> "Empieza a tu ritmo."
+                                    AuthMode.REQUEST_RESET -> "Recupera tu acceso."
+                                    AuthMode.CONFIRM_RESET -> "Crea una nueva clave."
+                                },
+                                color = Color.White,
+                                fontSize = 27.sp,
+                                lineHeight = 31.sp,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.padding(top = 8.dp),
+                            )
+                            Text(
+                                when (activeMode) {
+                                    AuthMode.SIGN_IN -> "Sincroniza tus avances y continúa donde lo dejaste."
+                                    AuthMode.CREATE_ACCOUNT -> "Crea tu cuenta y empieza a construir tu progreso."
+                                    AuthMode.REQUEST_RESET -> "Te ayudaremos a volver a entrar a tu cuenta."
+                                    AuthMode.CONFIRM_RESET -> "Escribe el código que recibiste y sigue adelante."
+                                },
+                                color = Color.White.copy(alpha = 0.78f),
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp,
+                                modifier = Modifier.padding(top = 5.dp),
+                            )
+                        }
+                    }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 14.dp),
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
-            ) {
-                AuthPill("Pomodoro", PrimaryPurple, Modifier.weight(1f))
-                AuthPill("Misiones", AccentOrange, Modifier.weight(1f))
-                AuthPill("Recompensas", SecondaryTeal, Modifier.weight(1f))
-            }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    ) {
+                        AuthPill("Pomodoro", PrimaryPurple, Modifier.weight(1f))
+                        AuthPill("Misiones", AccentOrange, Modifier.weight(1f))
+                        AuthPill("Recompensas", SecondaryTeal, Modifier.weight(1f))
+                    }
 
-            Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp),
-                color = Color.White,
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderLavender),
-                shadowElevation = 4.dp,
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        when (mode) {
-                            AuthMode.SIGN_IN -> "Entra a tu cuenta"
-                            AuthMode.REQUEST_RESET -> "Recupera tu cuenta"
-                            AuthMode.CONFIRM_RESET -> "Confirma tu recuperación"
-                        },
-                        color = Foreground,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
-                    )
-                    Text(
-                        when (mode) {
-                            AuthMode.SIGN_IN -> "Tus datos quedan protegidos y sincronizados."
-                            AuthMode.REQUEST_RESET -> "Usaremos tu correo para enviarte un código."
-                            AuthMode.CONFIRM_RESET -> "El código caduca en 15 minutos y solo se puede usar una vez."
-                        },
-                        color = MutedText,
-                        fontSize = 12.sp,
-                        lineHeight = 17.sp,
-                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
-                    )
-
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Correo") },
-                        leadingIcon = {
-                            Icon(Icons.Filled.MailOutline, contentDescription = null)
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        singleLine = true,
+                    Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                    )
+                        shape = RoundedCornerShape(22.dp),
+                        color = Color.White,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, BorderLavender),
+                        shadowElevation = 4.dp,
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                when (activeMode) {
+                                    AuthMode.SIGN_IN -> "Entra a tu cuenta"
+                                    AuthMode.CREATE_ACCOUNT -> "Crea tu cuenta"
+                                    AuthMode.REQUEST_RESET -> "Recupera tu cuenta"
+                                    AuthMode.CONFIRM_RESET -> "Confirma tu recuperación"
+                                },
+                                color = Foreground,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Black,
+                            )
+                            Text(
+                                when (activeMode) {
+                                    AuthMode.SIGN_IN -> "Tus datos quedan protegidos y sincronizados."
+                                    AuthMode.CREATE_ACCOUNT -> "Empieza a guardar tu progreso y continúa en cualquier dispositivo."
+                                    AuthMode.REQUEST_RESET -> "Usaremos tu correo para enviarte un código."
+                                    AuthMode.CONFIRM_RESET -> "El código caduca en 15 minutos y solo se puede usar una vez."
+                                },
+                                color = MutedText,
+                                fontSize = 12.sp,
+                                lineHeight = 17.sp,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                            )
 
-                    if (mode == AuthMode.CONFIRM_RESET) {
-                        OutlinedTextField(
-                            value = code,
-                            onValueChange = { code = it.uppercase() },
-                            label = { Text("Código de recuperación") },
-                            singleLine = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp),
-                            shape = RoundedCornerShape(14.dp),
-                        )
-                    }
-
-                    if (mode != AuthMode.REQUEST_RESET) {
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = {
-                                Text(if (mode == AuthMode.CONFIRM_RESET) "Nueva contraseña" else "Contraseña")
-                            },
-                            leadingIcon = {
-                                Icon(Icons.Filled.Lock, contentDescription = null)
-                            },
-                            visualTransformation = PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                            singleLine = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp),
-                            shape = RoundedCornerShape(14.dp),
-                        )
-                    }
-
-                    error?.let {
-                        AuthFeedback(
-                            text = it,
-                            isError = true,
-                            modifier = Modifier.padding(top = 12.dp),
-                        )
-                    }
-                    message?.let {
-                        AuthFeedback(
-                            text = it,
-                            isError = false,
-                            modifier = Modifier.padding(top = 12.dp),
-                        )
-                    }
-
-                    when (mode) {
-                        AuthMode.SIGN_IN -> {
-                            Button(
-                                onClick = { onSubmit(email.trim(), password, false) },
-                                enabled = !loading && email.isNotBlank() && password.length >= 8,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp)
-                                    .height(54.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
-                            ) {
-                                AuthButtonContent(if (loading) "Conectando…" else "Iniciar sesión", loading)
-                            }
-                            OutlinedButton(
-                                onClick = { onSubmit(email.trim(), password, true) },
-                                enabled = !loading && email.isNotBlank() && password.length >= 8,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                            ) {
-                                Text("Crear cuenta", fontWeight = FontWeight.Bold)
-                            }
-                            TextButton(
-                                onClick = { mode = AuthMode.REQUEST_RESET },
-                                enabled = !loading,
+                            OutlinedTextField(
+                                value = email,
+                                onValueChange = { email = it },
+                                label = { Text("Correo") },
+                                leadingIcon = {
+                                    Icon(Icons.Filled.MailOutline, contentDescription = null)
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                singleLine = true,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text("Olvidé mi contraseña", color = MutedText, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
+                                shape = RoundedCornerShape(14.dp),
+                            )
 
-                        AuthMode.REQUEST_RESET -> {
-                            Button(
-                                onClick = {
-                                    onRequestReset(email.trim())
-                                    mode = AuthMode.CONFIRM_RESET
-                                },
-                                enabled = !loading && email.isNotBlank(),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp)
-                                    .height(54.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
-                            ) {
-                                AuthButtonContent(if (loading) "Enviando…" else "Enviar código", loading)
+                            if (activeMode == AuthMode.CONFIRM_RESET) {
+                                OutlinedTextField(
+                                    value = code,
+                                    onValueChange = { code = it.uppercase() },
+                                    label = { Text("Código de recuperación") },
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp),
+                                    shape = RoundedCornerShape(14.dp),
+                                )
                             }
-                            OutlinedButton(
-                                onClick = { mode = AuthMode.SIGN_IN },
-                                enabled = !loading,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                            ) {
-                                Text("Volver a iniciar sesión", fontWeight = FontWeight.Bold)
-                            }
-                        }
 
-                        AuthMode.CONFIRM_RESET -> {
-                            Button(
-                                onClick = { onResetPassword(email.trim(), code.trim(), password) },
-                                enabled = !loading && email.isNotBlank() && code.isNotBlank() && password.length >= 8,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp)
-                                    .height(54.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
-                            ) {
-                                AuthButtonContent(if (loading) "Actualizando…" else "Cambiar contraseña", loading)
+                            if (activeMode != AuthMode.REQUEST_RESET) {
+                                OutlinedTextField(
+                                    value = password,
+                                    onValueChange = { password = it },
+                                    label = {
+                                        Text(if (activeMode == AuthMode.CONFIRM_RESET) "Nueva contraseña" else "Contraseña")
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Filled.Lock, contentDescription = null)
+                                    },
+                                    visualTransformation = PasswordVisualTransformation(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp),
+                                    shape = RoundedCornerShape(14.dp),
+                                )
                             }
-                            OutlinedButton(
-                                onClick = {
-                                    password = ""
-                                    code = ""
-                                    mode = AuthMode.SIGN_IN
-                                },
-                                enabled = !loading,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                            ) {
-                                Text("Volver a iniciar sesión", fontWeight = FontWeight.Bold)
+
+                            error?.let {
+                                AuthFeedback(
+                                    text = it,
+                                    isError = true,
+                                    modifier = Modifier.padding(top = 12.dp),
+                                )
+                            }
+                            message?.let {
+                                AuthFeedback(
+                                    text = it,
+                                    isError = false,
+                                    modifier = Modifier.padding(top = 12.dp),
+                                )
+                            }
+
+                            when (activeMode) {
+                                AuthMode.SIGN_IN -> {
+                                    Button(
+                                        onClick = { onSubmit(email.trim(), password, false) },
+                                        enabled = !loading && email.isNotBlank() && password.length >= 8,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 16.dp)
+                                            .height(54.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                                    ) {
+                                        AuthButtonContent(if (loading) "Conectando…" else "Iniciar sesión", loading)
+                                    }
+                                    OutlinedButton(
+                                        onClick = { mode = AuthMode.CREATE_ACCOUNT },
+                                        enabled = !loading,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp)
+                                            .height(52.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                    ) {
+                                        Text("Crear cuenta", fontWeight = FontWeight.Bold)
+                                    }
+                                    TextButton(
+                                        onClick = { mode = AuthMode.REQUEST_RESET },
+                                        enabled = !loading,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) {
+                                        Text("Olvidé mi contraseña", color = MutedText, fontWeight = FontWeight.SemiBold)
+                                    }
+                                }
+
+                                AuthMode.CREATE_ACCOUNT -> {
+                                    Button(
+                                        onClick = { onSubmit(email.trim(), password, true) },
+                                        enabled = !loading && email.isNotBlank() && password.length >= 8,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 16.dp)
+                                            .height(54.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                                    ) {
+                                        AuthButtonContent(if (loading) "Creando…" else "Crear cuenta", loading)
+                                    }
+                                    OutlinedButton(
+                                        onClick = { mode = AuthMode.SIGN_IN },
+                                        enabled = !loading,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp)
+                                            .height(52.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                    ) {
+                                        Text("Ya tengo una cuenta · Iniciar sesión", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                AuthMode.REQUEST_RESET -> {
+                                    Button(
+                                        onClick = {
+                                            onRequestReset(email.trim())
+                                            resendCooldownSeconds = 30
+                                            mode = AuthMode.CONFIRM_RESET
+                                        },
+                                        enabled = !loading && email.isNotBlank(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 16.dp)
+                                            .height(54.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                                    ) {
+                                        AuthButtonContent(if (loading) "Enviando…" else "Enviar código", loading)
+                                    }
+                                    OutlinedButton(
+                                        onClick = { mode = AuthMode.SIGN_IN },
+                                        enabled = !loading,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp)
+                                            .height(52.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                    ) {
+                                        Text("Volver a iniciar sesión", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                AuthMode.CONFIRM_RESET -> {
+                                    Button(
+                                        onClick = { onResetPassword(email.trim(), code.trim(), password) },
+                                        enabled = !loading && email.isNotBlank() && code.isNotBlank() && password.length >= 8,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 16.dp)
+                                            .height(54.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                                    ) {
+                                        AuthButtonContent(if (loading) "Actualizando…" else "Cambiar contraseña", loading)
+                                    }
+                                    TextButton(
+                                        onClick = {
+                                            onRequestReset(email.trim())
+                                            code = ""
+                                            resendCooldownSeconds = 30
+                                        },
+                                        enabled = !loading && email.isNotBlank() && resendCooldownSeconds == 0,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 3.dp),
+                                    ) {
+                                        Text(
+                                            if (resendCooldownSeconds > 0) {
+                                                "Reenviar código en ${resendCooldownSeconds}s"
+                                            } else {
+                                                "No recibí el código · Reenviar"
+                                            },
+                                            color = if (resendCooldownSeconds > 0) MutedText else PrimaryPurple,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            password = ""
+                                            code = ""
+                                            mode = AuthMode.SIGN_IN
+                                        },
+                                        enabled = !loading,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 3.dp)
+                                            .height(52.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                    ) {
+                                        Text("Volver a iniciar sesión", fontWeight = FontWeight.Bold)
+                                    }
+                                }
                             }
                         }
                     }
