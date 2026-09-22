@@ -26,4 +26,4 @@ packages = ["jdk17"]
 [userenv]
 
 [userenv.shared]
-PASSWORD_RESET_FROM = "TD-Coins <noreply@td-app.replit.app>"
+PASSWORD_RESET_FROM = "TD-Coins <onboarding@resend.dev>"
