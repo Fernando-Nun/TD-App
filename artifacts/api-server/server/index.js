@@ -200,7 +200,7 @@ app.post("/api/challenges/plan", authenticate, async (req, res) => {
     return res.status(400).json({ error: "Describe un reto de entre 3 y 500 caracteres." });
   }
   if (!process.env.GEMINI_API_KEY) {
-    return res.status(503).json({ error: "La personalización con IA no está disponible todavía." });
+    return res.status(503).json({ error: "La personalización no está disponible todavía." });
   }
   if (!consumeChallengePlanLimit(req.userId)) {
     return res.status(429).json({ error: "Has creado varios planes recientemente. Inténtalo de nuevo en un minuto." });
@@ -211,7 +211,7 @@ app.post("/api/challenges/plan", authenticate, async (req, res) => {
   } catch (error) {
     console.error("Could not generate challenge plan with Gemini", error.message);
     return res.status(502).json({
-      error: "No se pudo generar el plan con IA. Puedes intentarlo de nuevo más tarde.",
+      error: "No se pudo generar el plan. Puedes intentarlo de nuevo más tarde.",
     });
   }
 });

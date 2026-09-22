@@ -425,7 +425,7 @@ fun VoiceScreen(
                     onGenerateChallenge(text)
                         .onSuccess { generated ->
                             onChallengesChange(listOf(generated) + challenges)
-                            recognitionMessage = "Reto creado con un plan personalizado por IA."
+                            recognitionMessage = "Reto creado con un plan personalizado."
                             showAddChallenge = false
                         }
                         .onFailure {
@@ -471,7 +471,7 @@ private fun AddChallengeDialog(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text("Crear plan con IA")
+                    Text("Crear plan")
                 }
             }
         },
@@ -508,7 +508,7 @@ private fun PersonalizedPlan(
                 }
                 Column(modifier = Modifier.padding(start = 10.dp)) {
                     Text("Tu Plan Personalizado", fontSize = 20.sp, fontWeight = FontWeight.Black)
-                    Text("Generado con IA a partir de tus desafíos", color = MutedText, fontSize = 11.sp)
+                    Text("Adaptado a partir de tus desafíos", color = MutedText, fontSize = 12.sp)
                 }
             }
         }
@@ -516,7 +516,7 @@ private fun PersonalizedPlan(
             ScreenCard {
                 Column(modifier = Modifier.padding(15.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                        Text(challenge.text, fontSize = 14.sp, fontWeight = FontWeight.Black, lineHeight = 19.sp)
                     }
                     Text(
                         "RECORDATORIOS ACTIVADOS",
@@ -527,7 +527,7 @@ private fun PersonalizedPlan(
                         modifier = Modifier.padding(top = 14.dp, bottom = 5.dp),
                     )
                     challenge.reminders.forEach { reminder ->
-                        Text("• $reminder", fontSize = 11.sp, lineHeight = 16.sp, modifier = Modifier.padding(vertical = 3.dp))
+                        Text("• $reminder", fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.padding(vertical = 3.dp))
                     }
                     Text(
                         "PLAN DE ACCIÓN",
@@ -538,7 +538,7 @@ private fun PersonalizedPlan(
                         modifier = Modifier.padding(top = 12.dp, bottom = 5.dp),
                     )
                     challenge.plan.forEachIndexed { index, action ->
-                        Text("${index + 1}. $action", fontSize = 11.sp, lineHeight = 16.sp, modifier = Modifier.padding(vertical = 3.dp))
+                        Text("${index + 1}. $action", fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.padding(vertical = 3.dp))
                     }
                 }
             }
