@@ -26,7 +26,7 @@ import {
 } from 'wouter';
 
 const queryClient = new QueryClient();
-const downloadPath = '/downloads/td-coins.apk';
+const downloadPath = '/downloads/td-app.apk';
 
 function DownloadLink({
   children,
@@ -42,7 +42,7 @@ function DownloadLink({
       className={className}
       data-testid={testId}
       href={downloadPath}
-      download="td-coins.apk"
+      download="td-app.apk"
       aria-label="Descargar TD-App para Android"
     >
       {children}
