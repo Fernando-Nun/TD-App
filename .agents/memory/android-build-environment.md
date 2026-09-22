@@ -7,4 +7,4 @@ La compilación del APK requiere que el SDK Android exista en la ruta indicada p
 
 **Why:** En esta sesión Gradle no pudo iniciar la compilación porque la ruta configurada al SDK no estaba presente en el contenedor.
 
-**How to apply:** Antes de atribuir un error a Kotlin o Compose, comprobar primero que la ruta del SDK configurada existe y contiene las herramientas de Android; si falta, usar una composición Nix mínima, aceptar `NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1` solo en ese comando y apuntar `local.properties` al directorio interno `libexec/android-sdk`.
+**How to apply:** Antes de atribuir un error a Kotlin o Compose, comprobar primero que la ruta del SDK configurada existe y contiene las herramientas de Android; si falta, usar una composición Nix mínima, aceptar `NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1` solo en ese comando y apuntar `local.properties` al directorio interno `libexec/android-sdk`. Si aparecen muchos símbolos existentes como no resueltos tras cambios válidos, detener daemons y usar `./gradlew --no-daemon clean testDebugUnitTest`.

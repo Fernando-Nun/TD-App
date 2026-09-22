@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -46,6 +47,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +64,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
@@ -73,8 +76,12 @@ fun VoiceScreen(
     challenges: List<VoiceChallenge> = emptyList(),
     onChallengesChange: (List<VoiceChallenge>) -> Unit = {},
     onChallengeDeleted: (String) -> Unit = {},
+    onGenerateChallenge: suspend (String) -> Result<VoiceChallenge> = {
+        Result.success(createPersonalChallenge(it))
+    },
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var recording by remember { mutableStateOf(false) }
     var transcript by remember { mutableStateOf("") }
     var recognitionMessage by remember { mutableStateOf("Toca el micrófono y describe lo que necesitas lograr.") }
@@ -82,6 +89,7 @@ fun VoiceScreen(
     var showPlan by remember { mutableStateOf(false) }
     var showAddChallenge by remember { mutableStateOf(false) }
     var showClearNotes by remember { mutableStateOf(false) }
+    var generatingPlan by remember { mutableStateOf(false) }
     val speechRecognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) {
             SpeechRecognizer.createSpeechRecognizer(context)
@@ -410,10 +418,24 @@ fun VoiceScreen(
     }
     if (showAddChallenge) {
         AddChallengeDialog(
-            onDismiss = { showAddChallenge = false },
+            generating = generatingPlan,
+            onDismiss = { if (!generatingPlan) showAddChallenge = false },
             onAdd = { text ->
-                onChallengesChange(listOf(createPersonalChallenge(text)) + challenges)
-                showAddChallenge = false
+                scope.launch {
+                    generatingPlan = true
+                    onGenerateChallenge(text)
+                        .onSuccess { generated ->
+                            onChallengesChange(listOf(generated) + challenges)
+                            recognitionMessage = "Reto creado con un plan personalizado por IA."
+                            showAddChallenge = false
+                        }
+                        .onFailure {
+                            onChallengesChange(listOf(createPersonalChallenge(text)) + challenges)
+                            recognitionMessage = "No se pudo conectar con Gemini. Se creó un plan base; puedes intentarlo de nuevo más tarde."
+                            showAddChallenge = false
+                        }
+                    generatingPlan = false
+                }
             },
         )
     }
@@ -423,6 +445,7 @@ fun VoiceScreen(
 private fun AddChallengeDialog(
     onDismiss: () -> Unit,
     onAdd: (String) -> Unit,
+    generating: Boolean,
 ) {
     var text by remember { mutableStateOf("") }
     androidx.compose.material3.AlertDialog(
@@ -438,11 +461,29 @@ private fun AddChallengeDialog(
             )
         },
         confirmButton = {
-            Button(onClick = { if (text.isNotBlank()) onAdd(text.trim()) }, enabled = text.isNotBlank()) {
-                Text("Crear plan")
+            Button(
+                onClick = { if (text.isNotBlank()) onAdd(text.trim()) },
+                enabled = text.isNotBlank() && !generating,
+            ) {
+                if (generating) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text("Crear plan con IA")
+                }
             }
         },
-        dismissButton = { androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = {
+            androidx.compose.material3.TextButton(
+                onClick = onDismiss,
+                enabled = !generating,
+            ) {
+                Text("Cancelar")
+            }
+        },
     )
 }
 
@@ -468,7 +509,7 @@ private fun PersonalizedPlan(
                 }
                 Column(modifier = Modifier.padding(start = 10.dp)) {
                     Text("Tu Plan Personalizado", fontSize = 20.sp, fontWeight = FontWeight.Black)
-                    Text("Basado en tus desafíos", color = MutedText, fontSize = 11.sp)
+                    Text("Generado con IA a partir de tus desafíos", color = MutedText, fontSize = 11.sp)
                 }
             }
         }

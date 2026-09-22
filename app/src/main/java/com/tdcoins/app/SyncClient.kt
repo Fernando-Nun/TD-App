@@ -2,6 +2,7 @@ package com.tdcoins.app
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.net.ConnectException
@@ -9,6 +10,7 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.net.URL
+import java.util.UUID
 import javax.net.ssl.SSLException
 
 class SyncClient(private val persistence: AppPersistence) {
@@ -45,6 +47,24 @@ class SyncClient(private val persistence: AppPersistence) {
             }
         }
 
+    suspend fun generateChallengePlan(text: String): Result<VoiceChallenge> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val response = request(
+                    "/api/challenges/plan",
+                    JSONObject().put("challenge", text.trim()),
+                    persistence.sessionToken(),
+                )
+                VoiceChallenge(
+                    id = UUID.randomUUID().toString(),
+                    text = text.trim(),
+                    icon = response.optString("icon", "🌱"),
+                    reminders = response.getJSONArray("reminders").toStringList(),
+                    plan = response.getJSONArray("plan").toStringList(),
+                )
+            }
+        }
+
     suspend fun sync(snapshot: AppSnapshot): Result<AppSnapshot> = withContext(Dispatchers.IO) {
         runCatching {
             val token = persistence.sessionToken() ?: error("No active session")
@@ -62,6 +82,11 @@ class SyncClient(private val persistence: AppPersistence) {
             }
         }
     }
+
+    private fun JSONArray.toStringList(): List<String> =
+        (0 until length()).mapNotNull { index ->
+            optString(index).trim().takeIf { it.isNotBlank() }
+        }
 
     fun signOut() = persistence.saveSession(null)
 

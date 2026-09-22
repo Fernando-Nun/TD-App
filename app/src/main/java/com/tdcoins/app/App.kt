@@ -387,6 +387,7 @@ private fun TDCoinsContent(
                     },
                     challenges = challenges,
                     onChallengesChange = { challenges = it },
+                    onGenerateChallenge = { text -> syncClient.generateChallengePlan(text) },
                     onChallengeDeleted = { id ->
                         challenges = challenges.filterNot { it.id == id }
                         deletedChallengeIds = (deletedChallengeIds + id).distinct()
