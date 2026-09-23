@@ -152,19 +152,25 @@ const faqItems = [
   },
 ];
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
 
   useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(query.matches);
-    const listener = (event: MediaQueryListEvent) => setReduced(event.matches);
-    query.addEventListener('change', listener);
-    return () => query.removeEventListener('change', listener);
-  }, []);
+    const mql = window.matchMedia(query);
+    setMatches(mql.matches);
+    const listener = (event: MediaQueryListEvent) => setMatches(event.matches);
+    mql.addEventListener('change', listener);
+    return () => mql.removeEventListener('change', listener);
+  }, [query]);
 
-  return reduced;
+  return matches;
 }
+
+function usePrefersReducedMotion() {
+  return useMediaQuery('(prefers-reduced-motion: reduce)');
+}
+
+const MOBILE_STORY_BREAKPOINT = '(max-width: 840px)';
 
 function Reveal({
   as = 'div',
@@ -252,6 +258,8 @@ function Home() {
   const storyOrbitRef = useRef<HTMLDivElement | null>(null);
   const storyProgressRef = useRef(0);
   const reducedMotion = usePrefersReducedMotion();
+  const isMobileStory = useMediaQuery(MOBILE_STORY_BREAKPOINT);
+  const phoneMotionDisabled = reducedMotion || isMobileStory;
 
   useEffect(() => {
     document.title = 'TD-App | Un paso a la vez';
@@ -287,9 +295,14 @@ function Home() {
           : 0;
         storyProgressRef.current = progress;
 
-        const maxTravel = Math.max(0, rect.height - visualNode.offsetHeight);
-        visualNode.style.transform = `translateY(${(progress * maxTravel).toFixed(1)}px)`;
-        orbitNode.style.setProperty('--story-orbit-rotate', `${(-12 + progress * 50).toFixed(2)}deg`);
+        if (window.matchMedia(MOBILE_STORY_BREAKPOINT).matches) {
+          visualNode.style.transform = '';
+          orbitNode.style.removeProperty('--story-orbit-rotate');
+        } else {
+          const maxTravel = Math.max(0, rect.height - visualNode.offsetHeight);
+          visualNode.style.transform = `translateY(${(progress * maxTravel).toFixed(1)}px)`;
+          orbitNode.style.setProperty('--story-orbit-rotate', `${(-12 + progress * 50).toFixed(2)}deg`);
+        }
 
         const nextStage = Math.min(
           storyScenes.length - 1,
@@ -499,7 +512,7 @@ function Home() {
                 progressRef={storyProgressRef}
                 stage={storyStage}
                 stageCount={storyScenes.length}
-                reducedMotion={reducedMotion}
+                disableSpin={phoneMotionDisabled}
               />
             </div>
             <div className="td-story-badge td-story-badge-one"><Coins size={17} /> +12</div>

@@ -286,11 +286,11 @@ export interface CreatePhoneSceneOptions {
   canvas: HTMLCanvasElement;
   getProgress: () => number;
   stageCount: number;
-  reducedMotion: boolean;
+  disableSpin: boolean;
 }
 
 export function createPhoneScene(options: CreatePhoneSceneOptions): PhoneSceneHandle {
-  const { canvas, getProgress, stageCount, reducedMotion } = options;
+  const { canvas, getProgress, stageCount, disableSpin } = options;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
@@ -390,16 +390,19 @@ export function createPhoneScene(options: CreatePhoneSceneOptions): PhoneSceneHa
     document.fonts.ready.then(() => applyStageContent(currentStage)).catch(() => {});
   }
 
+  const renderOnce = () => renderer.render(scene, camera);
+
   const resize = (width: number, height: number) => {
     if (width <= 0 || height <= 0) return;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
+    if (disableSpin) renderOnce();
   };
 
   let lastTime = performance.now();
 
-  const renderFrame = () => {
+  const animateFrame = () => {
     if (disposed) return;
     const now = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.1);
@@ -407,26 +410,36 @@ export function createPhoneScene(options: CreatePhoneSceneOptions): PhoneSceneHa
     if (!paused) {
       const progress = Math.min(1, Math.max(0, getProgress()));
       const stageFloat = progress * (stageCount - 1);
-      const targetDeg = reducedMotion ? 0 : stageFloat * 360;
       const damping = 1 - Math.exp(-dt * 6);
-      currentRotationDeg += (targetDeg - currentRotationDeg) * damping;
+      currentRotationDeg += (stageFloat * 360 - currentRotationDeg) * damping;
       phoneGroup.rotation.y = THREE.MathUtils.degToRad(currentRotationDeg);
       phoneGroup.rotation.x = THREE.MathUtils.degToRad(Math.sin(stageFloat * Math.PI) * 2.5);
-      renderer.render(scene, camera);
+      renderOnce();
     }
-    requestAnimationFrame(renderFrame);
+    requestAnimationFrame(animateFrame);
   };
-  requestAnimationFrame(renderFrame);
+
+  // With spin disabled (reduced motion, or a small screen where a rotating,
+  // drifting phone reads as distracting rather than showcase-y) the phone
+  // never moves, so there's no need for a continuous render loop — render
+  // once up front and again only when the stage or size actually changes.
+  if (disableSpin) {
+    renderOnce();
+  } else {
+    requestAnimationFrame(animateFrame);
+  }
 
   return {
     setStage: (stage: number) => {
       if (stage === currentStage) return;
       currentStage = stage;
       applyStageContent(stage);
+      if (disableSpin) renderOnce();
     },
     resize,
     setPaused: (value: boolean) => {
       paused = value;
+      if (disableSpin && !value) renderOnce();
     },
     dispose: () => {
       disposed = true;

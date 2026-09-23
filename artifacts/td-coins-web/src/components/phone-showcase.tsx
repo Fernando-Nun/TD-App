@@ -5,12 +5,12 @@ export function PhoneShowcase({
   progressRef,
   stage,
   stageCount,
-  reducedMotion,
+  disableSpin,
 }: {
   progressRef: MutableRefObject<number>;
   stage: number;
   stageCount: number;
-  reducedMotion: boolean;
+  disableSpin: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<PhoneSceneHandle | null>(null);
@@ -26,7 +26,7 @@ export function PhoneShowcase({
         canvas,
         getProgress: () => progressRef.current,
         stageCount,
-        reducedMotion,
+        disableSpin,
       });
       sceneRef.current = handle;
     } catch {
@@ -57,7 +57,7 @@ export function PhoneShowcase({
       sceneRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageCount, reducedMotion]);
+  }, [stageCount, disableSpin]);
 
   useEffect(() => {
     sceneRef.current?.setStage(stage);
