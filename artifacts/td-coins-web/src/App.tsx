@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ElementType,
+  type ReactNode,
+} from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Accessibility,
@@ -57,6 +63,161 @@ const storyScenes = [
   },
 ];
 
+const featureItems = [
+  {
+    icon: Clock3,
+    title: 'Bloques de enfoque',
+    copy: 'Temporizadores sencillos para entrar, estar y cerrar.',
+    testId: 'card-feature-missions',
+  },
+  {
+    icon: Check,
+    title: 'Misiones y hábitos',
+    copy: 'Haz visible la constancia sin pedirte hacerlo perfecto.',
+    testId: 'card-feature-habits',
+  },
+  {
+    icon: Mic,
+    title: 'Reflexión por voz',
+    copy: 'Guarda cómo te fue sin tener que sentarte a escribir.',
+    testId: 'card-feature-voice',
+  },
+  {
+    icon: Accessibility,
+    title: 'Accesible de verdad',
+    copy: 'Controles comprensibles, apoyo visual y menos ruido.',
+    testId: 'card-feature-accessibility',
+  },
+  {
+    icon: Sparkles,
+    title: 'Planes personalizados',
+    copy: 'Convierte cada reto en pasos concretos que puedas comenzar.',
+    testId: 'card-feature-plans',
+  },
+];
+
+const rewardItems = [
+  {
+    label: 'Pelota antiestrés',
+    caption: 'Para volver al presente',
+    image: '/assets/pelota.png',
+    alt: 'Pelota antiestrés morada de TD-App',
+    testId: 'card-reward-ball',
+  },
+  {
+    label: 'Llavero',
+    caption: 'Un paso a la vez',
+    image: '/assets/llavero.png',
+    alt: 'Llavero morado de TD-App',
+    testId: 'card-reward-keychain',
+  },
+  {
+    label: 'Taza',
+    caption: 'Tu pausa también cuenta',
+    image: '/assets/taza.png',
+    alt: 'Taza de TD-App',
+    testId: 'card-reward-mug',
+  },
+  {
+    label: 'Mochila',
+    caption: 'Para lo que viene',
+    image: '/assets/mochila.png',
+    alt: 'Mochila lila de TD-App',
+    testId: 'card-reward-backpack',
+  },
+];
+
+const faqItems = [
+  {
+    question: '¿En qué dispositivos funciona?',
+    answer:
+      'TD-App está preparada para teléfonos Android compatibles con la versión mínima indicada por la aplicación.',
+    defaultOpen: true,
+  },
+  {
+    question: '¿Cómo instalo el APK?',
+    answer:
+      'Descarga el archivo desde esta página. Si Android lo solicita, permite temporalmente la instalación desde esta fuente en Ajustes.',
+  },
+  {
+    question: '¿Necesito hacerlo todo perfecto?',
+    answer:
+      'No. La app está pensada para reconocer avances pequeños: una misión, un bloque y un paso posible ya cuentan.',
+  },
+  {
+    question: '¿Qué puedo hacer dentro de la app?',
+    answer:
+      'Puedes crear misiones, usar bloques de enfoque, registrar reflexiones por voz, revisar tus avances y convertirlos en TD-Coins.',
+  },
+];
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(query.matches);
+    const listener = (event: MediaQueryListEvent) => setReduced(event.matches);
+    query.addEventListener('change', listener);
+    return () => query.removeEventListener('change', listener);
+  }, []);
+
+  return reduced;
+}
+
+function Reveal({
+  as = 'div',
+  children,
+  className = '',
+  delay = 0,
+  ...rest
+}: {
+  as?: ElementType;
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+} & Record<string, unknown>) {
+  const ref = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const Component = as as unknown as 'div';
+
+  return (
+    <Component
+      ref={ref as never}
+      className={`td-reveal-io${visible ? ' is-visible' : ''}${className ? ` ${className}` : ''}`}
+      style={{ transitionDelay: `${delay}ms` }}
+      {...rest}
+    >
+      {children}
+    </Component>
+  );
+}
+
 function DownloadLink({
   children,
   className = 'td-primary-button',
@@ -82,7 +243,11 @@ function DownloadLink({
 function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [storyStage, setStoryStage] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const storyRefs = useRef<(HTMLElement | null)[]>([]);
+  const heroArtRef = useRef<HTMLDivElement | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     document.title = 'TD-App | Un paso a la vez';
@@ -118,11 +283,70 @@ function Home() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let ticking = false;
+
+    const updateScrollState = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrolled(scrollTop > 24);
+      setScrollProgress(docHeight > 0 ? Math.min(1, Math.max(0, scrollTop / docHeight)) : 0);
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollState);
+        ticking = true;
+      }
+    };
+
+    updateScrollState();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const node = heroArtRef.current;
+    if (!node) return;
+    if (reducedMotion) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+
+    const handleMove = (event: PointerEvent) => {
+      const rect = node.getBoundingClientRect();
+      const relX = (event.clientX - rect.left) / rect.width - 0.5;
+      const relY = (event.clientY - rect.top) / rect.height - 0.5;
+      node.style.setProperty('--parallax-x', relX.toFixed(3));
+      node.style.setProperty('--parallax-y', relY.toFixed(3));
+    };
+
+    const handleLeave = () => {
+      node.style.setProperty('--parallax-x', '0');
+      node.style.setProperty('--parallax-y', '0');
+    };
+
+    node.addEventListener('pointermove', handleMove);
+    node.addEventListener('pointerleave', handleLeave);
+    return () => {
+      node.removeEventListener('pointermove', handleMove);
+      node.removeEventListener('pointerleave', handleLeave);
+    };
+  }, [reducedMotion]);
+
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
     <main className="td-page">
-      <header className="td-container td-nav" data-testid="header-navigation">
+      <div
+        className="td-progress"
+        style={{ transform: `scaleX(${scrollProgress})` }}
+        aria-hidden="true"
+      />
+
+      <header
+        className={`td-container td-nav${scrolled ? ' is-scrolled' : ''}`}
+        data-testid="header-navigation"
+      >
         <a className="td-brand" href="#inicio" data-testid="link-brand">
           <img
             src="/assets/td-coins-logo.png"
@@ -219,28 +443,33 @@ function Home() {
           </div>
         </div>
 
-        <div className="td-hero-art td-reveal td-delay-2" aria-label="Identidad visual de TD-App">
-          <div className="td-coin-orbit">
-            <img
-              className="td-hero-logo"
-              src="/assets/td-coins-logo.png"
-              alt="Identidad de TD-App"
-              data-testid="img-hero-logo"
-            />
-          </div>
-          <div className="td-floating-card td-float-one" data-testid="card-focus-win">
-            <strong>+12 TD-Coins</strong>
-            <span>Bloque completado</span>
-          </div>
-          <div className="td-floating-card td-float-two" data-testid="card-next-step">
-            <strong>Un paso</strong>
-            <span>También cuenta</span>
+        <div
+          className="td-hero-art td-reveal td-delay-2"
+          aria-label="Identidad visual de TD-App"
+        >
+          <div ref={heroArtRef} className="td-hero-art-tilt">
+            <div className="td-coin-orbit">
+              <img
+                className="td-hero-logo"
+                src="/assets/td-coins-logo.png"
+                alt="Identidad de TD-App"
+                data-testid="img-hero-logo"
+              />
+            </div>
+            <div className="td-floating-card td-float-one" data-testid="card-focus-win">
+              <strong>+12 TD-Coins</strong>
+              <span>Bloque completado</span>
+            </div>
+            <div className="td-floating-card td-float-two" data-testid="card-next-step">
+              <strong>Un paso</strong>
+              <span>También cuenta</span>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="td-story-section" id="como-funciona">
-        <div className="td-container td-story-intro">
+        <Reveal as="div" className="td-container td-story-intro">
           <div>
             <div className="td-section-label">Una pequeña victoria, paso a paso</div>
             <h2 className="td-display">
@@ -253,7 +482,7 @@ function Home() {
             Desliza para ver cómo un momento de enfoque se convierte en algo que
             puedes reconocer, guardar y repetir.
           </p>
-        </div>
+        </Reveal>
 
         <div className="td-container td-story-layout">
           <div className="td-story-visual" data-stage={storyStage} aria-hidden="true">
@@ -333,7 +562,7 @@ function Home() {
 
       <section className="td-section" id="funciones">
         <div className="td-container">
-          <div className="td-section-header">
+          <Reveal as="div" className="td-section-header">
             <div>
               <div className="td-section-label">Diseñado para tu atención</div>
               <h2 className="td-display">Menos exigencia. Más movimiento.</h2>
@@ -341,10 +570,14 @@ function Home() {
             <p>
               Apoyos claros para esos días en los que empezar ya es una victoria.
             </p>
-          </div>
+          </Reveal>
 
           <div className="td-feature-layout">
-            <article className="td-feature-main" data-testid="card-feature-focus">
+            <Reveal
+              as="article"
+              className="td-feature-main"
+              data-testid="card-feature-focus"
+            >
               <div className="td-feature-icon">
                 <Target size={27} strokeWidth={2.2} />
               </div>
@@ -355,33 +588,24 @@ function Home() {
                   señal clara cuando termines cada uno.
                 </p>
               </div>
-            </article>
+            </Reveal>
             <div className="td-feature-grid">
-              <article className="td-feature-item" data-testid="card-feature-missions">
-                <Clock3 size={23} />
-                <h3>Bloques de enfoque</h3>
-                <p>Temporizadores sencillos para entrar, estar y cerrar.</p>
-              </article>
-              <article className="td-feature-item" data-testid="card-feature-habits">
-                <Check size={23} />
-                <h3>Misiones y hábitos</h3>
-                <p>Haz visible la constancia sin pedirte hacerlo perfecto.</p>
-              </article>
-              <article className="td-feature-item" data-testid="card-feature-voice">
-                <Mic size={23} />
-                <h3>Reflexión por voz</h3>
-                <p>Guarda cómo te fue sin tener que sentarte a escribir.</p>
-              </article>
-              <article className="td-feature-item" data-testid="card-feature-accessibility">
-                <Accessibility size={23} />
-                <h3>Accesible de verdad</h3>
-                <p>Controles comprensibles, apoyo visual y menos ruido.</p>
-              </article>
-              <article className="td-feature-item" data-testid="card-feature-plans">
-                <Sparkles size={23} />
-                <h3>Planes personalizados</h3>
-                <p>Convierte cada reto en pasos concretos que puedas comenzar.</p>
-              </article>
+              {featureItems.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <Reveal
+                    key={item.testId}
+                    as="article"
+                    className="td-feature-item"
+                    data-testid={item.testId}
+                    delay={90 * (index + 1)}
+                  >
+                    <Icon size={23} />
+                    <h3>{item.title}</h3>
+                    <p>{item.copy}</p>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -389,7 +613,7 @@ function Home() {
 
       <section className="td-section td-rewards" id="recompensas">
         <div className="td-container">
-          <div className="td-section-header">
+          <Reveal as="div" className="td-section-header">
             <div>
               <div className="td-section-label">Lo que estás construyendo</div>
               <h2 className="td-display">Tus monedas, tus motivos.</h2>
@@ -398,74 +622,53 @@ function Home() {
               Las recompensas no son el objetivo. Son una forma tangible de
               recordar que sí avanzaste.
             </p>
-          </div>
+          </Reveal>
           <div className="td-reward-grid">
-            <article className="td-reward-card" data-testid="card-reward-ball">
-              <span className="td-reward-label">
-                Pelota antiestrés
-                <small>Para volver al presente</small>
-              </span>
-              <img src="/assets/pelota.png" alt="Pelota antiestrés morada de TD-App" />
-            </article>
-            <article className="td-reward-card" data-testid="card-reward-keychain">
-              <span className="td-reward-label">
-                Llavero
-                <small>Un paso a la vez</small>
-              </span>
-              <img src="/assets/llavero.png" alt="Llavero morado de TD-App" />
-            </article>
-            <article className="td-reward-card" data-testid="card-reward-mug">
-              <span className="td-reward-label">
-                Taza
-                <small>Tu pausa también cuenta</small>
-              </span>
-              <img src="/assets/taza.png" alt="Taza de TD-App" />
-            </article>
-            <article className="td-reward-card" data-testid="card-reward-backpack">
-              <span className="td-reward-label">
-                Mochila
-                <small>Para lo que viene</small>
-              </span>
-              <img src="/assets/mochila.png" alt="Mochila lila de TD-App" />
-            </article>
+            {rewardItems.map((item, index) => (
+              <Reveal
+                key={item.testId}
+                as="article"
+                className="td-reward-card"
+                data-testid={item.testId}
+                delay={80 * index}
+              >
+                <span className="td-reward-label">
+                  {item.label}
+                  <small>{item.caption}</small>
+                </span>
+                <img src={item.image} alt={item.alt} />
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
       <section className="td-section td-faq" id="preguntas">
         <div className="td-container td-faq-layout">
-          <div className="td-faq-intro">
+          <Reveal as="div" className="td-faq-intro">
             <div className="td-section-label">Antes de empezar</div>
             <h2 className="td-display">Lo importante, sin rodeos.</h2>
             <p>
               Todo lo necesario para descargar TD-App y dar tu primer paso con
               calma.
             </p>
-          </div>
-          <div className="td-faq-list">
-            <details open>
-              <summary>¿En qué dispositivos funciona?</summary>
-              <p>TD-App está preparada para teléfonos Android compatibles con la versión mínima indicada por la aplicación.</p>
-            </details>
-            <details>
-              <summary>¿Cómo instalo el APK?</summary>
-              <p>Descarga el archivo desde esta página. Si Android lo solicita, permite temporalmente la instalación desde esta fuente en Ajustes.</p>
-            </details>
-            <details>
-              <summary>¿Necesito hacerlo todo perfecto?</summary>
-              <p>No. La app está pensada para reconocer avances pequeños: una misión, un bloque y un paso posible ya cuentan.</p>
-            </details>
-            <details>
-              <summary>¿Qué puedo hacer dentro de la app?</summary>
-              <p>Puedes crear misiones, usar bloques de enfoque, registrar reflexiones por voz, revisar tus avances y convertirlos en TD-Coins.</p>
-            </details>
-          </div>
+          </Reveal>
+          <Reveal as="div" className="td-faq-list" delay={90}>
+            {faqItems.map((item) => (
+              <details key={item.question} open={item.defaultOpen}>
+                <summary>{item.question}</summary>
+                <div className="td-faq-panel">
+                  <p>{item.answer}</p>
+                </div>
+              </details>
+            ))}
+          </Reveal>
         </div>
       </section>
 
       <section className="td-download" id="descargar">
         <div className="td-container">
-          <div className="td-download-card">
+          <Reveal as="div" className="td-download-card">
             <div>
               <div className="td-section-label">Listo para empezar</div>
               <h2 className="td-display">El siguiente paso está aquí.</h2>
@@ -495,7 +698,7 @@ function Home() {
                 </span>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
