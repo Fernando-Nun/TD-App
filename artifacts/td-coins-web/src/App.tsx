@@ -9,7 +9,6 @@ import {
   Coins,
   Download,
   Info,
-  ListChecks,
   Menu,
   Mic,
   ShieldCheck,
@@ -378,12 +377,16 @@ function Home() {
                 <h3>Accesible de verdad</h3>
                 <p>Controles comprensibles, apoyo visual y menos ruido.</p>
               </article>
+              <article className="td-feature-item" data-testid="card-feature-plans">
+                <Sparkles size={23} />
+                <h3>Planes personalizados</h3>
+                <p>Convierte cada reto en pasos concretos que puedas comenzar.</p>
+              </article>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="td-section" id="como-funciona">
       <section className="td-section td-rewards" id="recompensas">
         <div className="td-container">
           <div className="td-section-header">
