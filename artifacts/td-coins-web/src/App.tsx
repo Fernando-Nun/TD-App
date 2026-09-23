@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Accessibility,
@@ -6,11 +6,14 @@ import {
   ArrowRight,
   Check,
   Clock3,
+  Coins,
   Download,
   Info,
+  ListChecks,
   Menu,
   Mic,
   ShieldCheck,
+  Sparkles,
   Target,
   X,
 } from 'lucide-react';
@@ -27,6 +30,33 @@ import {
 
 const queryClient = new QueryClient();
 const downloadPath = '/downloads/td-app.apk';
+
+const storyScenes = [
+  {
+    number: '01',
+    label: 'ELIGE',
+    title: 'Empieza por algo posible.',
+    copy: 'Convierte una intención grande en una misión concreta que puedas comenzar ahora.',
+  },
+  {
+    number: '02',
+    label: 'AVANZA',
+    title: 'Quédate con el siguiente bloque.',
+    copy: 'Un temporizador sencillo te ayuda a entrar, estar y cerrar sin perseguir la perfección.',
+  },
+  {
+    number: '03',
+    label: 'CELEBRA',
+    title: 'Haz visible que sí avanzaste.',
+    copy: 'Cada bloque terminado se convierte en una señal clara: lo hiciste, y cuenta.',
+  },
+  {
+    number: '04',
+    label: 'REPITE',
+    title: 'Construye algo que te acompañe.',
+    copy: 'Tus TD-Coins hacen tangible la constancia y te dan un motivo amable para volver.',
+  },
+];
 
 function DownloadLink({
   children,
@@ -52,6 +82,8 @@ function DownloadLink({
 
 function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [storyStage, setStoryStage] = useState(0);
+  const storyRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
     document.title = 'TD-App | Un paso a la vez';
@@ -65,6 +97,26 @@ function Home() {
     }
     meta.setAttribute('content', description);
     document.documentElement.lang = 'es';
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        const nextStage = Number((visible.target as HTMLElement).dataset.storyStage);
+        if (!Number.isNaN(nextStage)) setStoryStage(nextStage);
+      },
+      { rootMargin: '-30% 0px -45% 0px', threshold: [0.15, 0.45, 0.75] },
+    );
+
+    storyRefs.current.forEach((scene) => {
+      if (scene) observer.observe(scene);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const closeMenu = () => setMobileMenuOpen(false);
@@ -85,6 +137,7 @@ function Home() {
           <a href="#como-funciona" data-testid="link-how-it-works">Cómo funciona</a>
           <a href="#funciones" data-testid="link-features">Funciones</a>
           <a href="#recompensas" data-testid="link-rewards">Recompensas</a>
+            <a href="#preguntas" data-testid="link-faq">Preguntas</a>
         </nav>
 
         <DownloadLink
@@ -116,6 +169,9 @@ function Home() {
             </a>
             <a href="#recompensas" onClick={closeMenu} data-testid="link-mobile-rewards">
               Recompensas
+            </a>
+            <a href="#preguntas" onClick={closeMenu} data-testid="link-mobile-faq">
+              Preguntas
             </a>
             <DownloadLink
               className="td-primary-button"
@@ -184,6 +240,98 @@ function Home() {
         </div>
       </section>
 
+      <section className="td-story-section" id="como-funciona">
+        <div className="td-container td-story-intro">
+          <div>
+            <div className="td-section-label">Una pequeña victoria, paso a paso</div>
+            <h2 className="td-display">
+              La app no te pide más.
+              <br />
+              Te ayuda a <em>empezar.</em>
+            </h2>
+          </div>
+          <p>
+            Desliza para ver cómo un momento de enfoque se convierte en algo que
+            puedes reconocer, guardar y repetir.
+          </p>
+        </div>
+
+        <div className="td-container td-story-layout">
+          <div className="td-story-visual" data-stage={storyStage} aria-hidden="true">
+            <div className="td-story-orbit" />
+            <div className="td-phone">
+              <div className="td-phone-speaker" />
+              <div className="td-phone-screen">
+                <div className="td-phone-status">
+                  <span>TD-App</span>
+                  <span>Hoy</span>
+                </div>
+                <div className="td-phone-heading">
+                  <span>Tu siguiente paso</span>
+                  <strong>Hazlo posible.</strong>
+                </div>
+                <div className="td-story-panels">
+                  <div className="td-story-panel" data-panel="0">
+                    <span className="td-panel-kicker">MISIÓN DE HOY</span>
+                    <strong>Preparar mi presentación</strong>
+                    <div className="td-panel-action">
+                      <Target size={16} />
+                      Empezar pequeño
+                    </div>
+                  </div>
+                  <div className="td-story-panel" data-panel="1">
+                    <span className="td-panel-kicker">BLOQUE DE ENFOQUE</span>
+                    <strong className="td-timer">25:00</strong>
+                    <div className="td-panel-progress"><span /></div>
+                    <span className="td-panel-caption">Un momento a la vez.</span>
+                  </div>
+                  <div className="td-story-panel" data-panel="2">
+                    <span className="td-panel-kicker">BLOQUE COMPLETADO</span>
+                    <strong className="td-check-mark"><Check size={22} /> Bien hecho</strong>
+                    <div className="td-panel-coins"><Coins size={17} /> +12 TD-Coins</div>
+                  </div>
+                  <div className="td-story-panel" data-panel="3">
+                    <span className="td-panel-kicker">TU RECOMPENSA</span>
+                    <strong>También cuenta volver a ti.</strong>
+                    <div className="td-panel-reward"><Sparkles size={16} /> Pelota antiestrés</div>
+                  </div>
+                </div>
+                <div className="td-phone-tabs">
+                  <span className="is-active" />
+                  <span />
+                  <span />
+                </div>
+              </div>
+            </div>
+            <div className="td-story-badge td-story-badge-one"><Coins size={17} /> +12</div>
+            <div className="td-story-badge td-story-badge-two"><Check size={16} /> Listo</div>
+          </div>
+
+          <div className="td-story-scenes">
+            {storyScenes.map((scene, index) => (
+              <article
+                key={scene.number}
+                ref={(node) => {
+                  storyRefs.current[index] = node;
+                }}
+                className={`td-story-scene ${storyStage === index ? 'is-active' : ''}`}
+                data-story-stage={index}
+              >
+                <span className="td-story-number">{scene.number} / {scene.label}</span>
+                <div className="td-story-scene-icon">
+                  {index === 0 && <Target size={23} />}
+                  {index === 1 && <Clock3 size={23} />}
+                  {index === 2 && <Check size={23} />}
+                  {index === 3 && <Coins size={23} />}
+                </div>
+                <h3>{scene.title}</h3>
+                <p>{scene.copy}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="td-section" id="funciones">
         <div className="td-container">
           <div className="td-section-header">
@@ -236,36 +384,6 @@ function Home() {
       </section>
 
       <section className="td-section" id="como-funciona">
-        <div className="td-container">
-          <div className="td-section-header">
-            <div>
-              <div className="td-section-label">La mecánica</div>
-              <h2 className="td-display">Un sistema que te devuelve la prueba.</h2>
-            </div>
-            <p>
-              No tienes que cambiar tu vida hoy. Solo completar lo que toca ahora.
-            </p>
-          </div>
-          <div className="td-steps">
-            <article className="td-step" data-testid="step-one">
-              <span className="td-step-number">01 / ELIGE</span>
-              <h3>Escoge una misión</h3>
-              <p>Algo concreto, con un comienzo que puedas reconocer.</p>
-            </article>
-            <article className="td-step" data-testid="step-two">
-              <span className="td-step-number">02 / AVANZA</span>
-              <h3>Haz un bloque</h3>
-              <p>Enfócate durante el tiempo que tenga sentido para ti.</p>
-            </article>
-            <article className="td-step" data-testid="step-three">
-              <span className="td-step-number">03 / CELEBRA</span>
-              <h3>Gana TD-Coins</h3>
-              <p>Acumula pequeñas victorias y canjéalas por recompensas.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
       <section className="td-section td-rewards" id="recompensas">
         <div className="td-container">
           <div className="td-section-header">
@@ -307,6 +425,37 @@ function Home() {
               </span>
               <img src="/assets/mochila.png" alt="Mochila lila de TD-App" />
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="td-section td-faq" id="preguntas">
+        <div className="td-container td-faq-layout">
+          <div className="td-faq-intro">
+            <div className="td-section-label">Antes de empezar</div>
+            <h2 className="td-display">Lo importante, sin rodeos.</h2>
+            <p>
+              Todo lo necesario para descargar TD-App y dar tu primer paso con
+              calma.
+            </p>
+          </div>
+          <div className="td-faq-list">
+            <details open>
+              <summary>¿En qué dispositivos funciona?</summary>
+              <p>TD-App está preparada para teléfonos Android compatibles con la versión mínima indicada por la aplicación.</p>
+            </details>
+            <details>
+              <summary>¿Cómo instalo el APK?</summary>
+              <p>Descarga el archivo desde esta página. Si Android lo solicita, permite temporalmente la instalación desde esta fuente en Ajustes.</p>
+            </details>
+            <details>
+              <summary>¿Necesito hacerlo todo perfecto?</summary>
+              <p>No. La app está pensada para reconocer avances pequeños: una misión, un bloque y un paso posible ya cuentan.</p>
+            </details>
+            <details>
+              <summary>¿Qué puedo hacer dentro de la app?</summary>
+              <p>Puedes crear misiones, usar bloques de enfoque, registrar reflexiones por voz, revisar tus avances y convertirlos en TD-Coins.</p>
+            </details>
           </div>
         </div>
       </section>
