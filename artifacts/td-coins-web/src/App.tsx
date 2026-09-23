@@ -23,6 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { PhoneShowcase } from '@/components/phone-showcase';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
@@ -245,8 +246,11 @@ function Home() {
   const [storyStage, setStoryStage] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const storyRefs = useRef<(HTMLElement | null)[]>([]);
   const heroArtRef = useRef<HTMLDivElement | null>(null);
+  const storyScenesWrapRef = useRef<HTMLDivElement | null>(null);
+  const storyVisualRef = useRef<HTMLDivElement | null>(null);
+  const storyOrbitRef = useRef<HTMLDivElement | null>(null);
+  const storyProgressRef = useRef(0);
   const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -264,26 +268,6 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
-        const nextStage = Number((visible.target as HTMLElement).dataset.storyStage);
-        if (!Number.isNaN(nextStage)) setStoryStage(nextStage);
-      },
-      { rootMargin: '-30% 0px -45% 0px', threshold: [0.15, 0.45, 0.75] },
-    );
-
-    storyRefs.current.forEach((scene) => {
-      if (scene) observer.observe(scene);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
     let ticking = false;
 
     const updateScrollState = () => {
@@ -291,6 +275,29 @@ function Home() {
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       setScrolled(scrollTop > 24);
       setScrollProgress(docHeight > 0 ? Math.min(1, Math.max(0, scrollTop / docHeight)) : 0);
+
+      const scenesNode = storyScenesWrapRef.current;
+      const visualNode = storyVisualRef.current;
+      const orbitNode = storyOrbitRef.current;
+      if (scenesNode && visualNode && orbitNode) {
+        const rect = scenesNode.getBoundingClientRect();
+        const scrollable = rect.height - window.innerHeight;
+        const progress = scrollable > 0
+          ? Math.min(1, Math.max(0, -rect.top / scrollable))
+          : 0;
+        storyProgressRef.current = progress;
+
+        const maxTravel = Math.max(0, rect.height - visualNode.offsetHeight);
+        visualNode.style.transform = `translateY(${(progress * maxTravel).toFixed(1)}px)`;
+        orbitNode.style.setProperty('--story-orbit-rotate', `${(-12 + progress * 50).toFixed(2)}deg`);
+
+        const nextStage = Math.min(
+          storyScenes.length - 1,
+          Math.round(progress * (storyScenes.length - 1)),
+        );
+        setStoryStage((current) => (current === nextStage ? current : nextStage));
+      }
+
       ticking = false;
     };
 
@@ -485,65 +492,25 @@ function Home() {
         </Reveal>
 
         <div className="td-container td-story-layout">
-          <div className="td-story-visual" data-stage={storyStage} aria-hidden="true">
-            <div className="td-story-orbit" />
-            <div className="td-phone">
-              <div className="td-phone-speaker" />
-              <div className="td-phone-screen">
-                <div className="td-phone-status">
-                  <span>TD-App</span>
-                  <span>Hoy</span>
-                </div>
-                <div className="td-phone-heading">
-                  <span>Tu siguiente paso</span>
-                  <strong>Hazlo posible.</strong>
-                </div>
-                <div className="td-story-panels">
-                  <div className="td-story-panel" data-panel="0">
-                    <span className="td-panel-kicker">MISIÓN DE HOY</span>
-                    <strong>Preparar mi presentación</strong>
-                    <div className="td-panel-action">
-                      <Target size={16} />
-                      Empezar pequeño
-                    </div>
-                  </div>
-                  <div className="td-story-panel" data-panel="1">
-                    <span className="td-panel-kicker">BLOQUE DE ENFOQUE</span>
-                    <strong className="td-timer">25:00</strong>
-                    <div className="td-panel-progress"><span /></div>
-                    <span className="td-panel-caption">Un momento a la vez.</span>
-                  </div>
-                  <div className="td-story-panel" data-panel="2">
-                    <span className="td-panel-kicker">BLOQUE COMPLETADO</span>
-                    <strong className="td-check-mark"><Check size={22} /> Bien hecho</strong>
-                    <div className="td-panel-coins"><Coins size={17} /> +12 TD-Coins</div>
-                  </div>
-                  <div className="td-story-panel" data-panel="3">
-                    <span className="td-panel-kicker">TU RECOMPENSA</span>
-                    <strong>También cuenta volver a ti.</strong>
-                    <div className="td-panel-reward"><Sparkles size={16} /> Pelota antiestrés</div>
-                  </div>
-                </div>
-                <div className="td-phone-tabs">
-                  <span className="is-active" />
-                  <span />
-                  <span />
-                </div>
-              </div>
+          <div ref={storyVisualRef} className="td-story-visual" aria-hidden="true">
+            <div ref={storyOrbitRef} className="td-story-orbit" />
+            <div className="td-phone-3d-wrap">
+              <PhoneShowcase
+                progressRef={storyProgressRef}
+                stage={storyStage}
+                stageCount={storyScenes.length}
+                reducedMotion={reducedMotion}
+              />
             </div>
             <div className="td-story-badge td-story-badge-one"><Coins size={17} /> +12</div>
             <div className="td-story-badge td-story-badge-two"><Check size={16} /> Listo</div>
           </div>
 
-          <div className="td-story-scenes">
+          <div ref={storyScenesWrapRef} className="td-story-scenes">
             {storyScenes.map((scene, index) => (
               <article
                 key={scene.number}
-                ref={(node) => {
-                  storyRefs.current[index] = node;
-                }}
                 className={`td-story-scene ${storyStage === index ? 'is-active' : ''}`}
-                data-story-stage={index}
               >
                 <span className="td-story-number">{scene.number} / {scene.label}</span>
                 <div className="td-story-scene-icon">
