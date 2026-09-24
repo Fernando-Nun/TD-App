@@ -1,0 +1,28 @@
+kind = "video"
+previewPath = "/presentacion/td-app/"
+title = "TD-App — Presentación de producto"
+description = "Presentación promocional independiente de hasta 60 segundos que introduce TD-App y sus funciones mediante una narrativa de lanzamiento con escenas visuales y efectos 3D."
+version = "1.0.0"
+id = "artifacts/td-app-product-presentation"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/presentacion/td-app/" ]
+localPort = 26257
+
+[services.development]
+run = "pnpm --filter @workspace/td-app-product-presentation run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/td-app-product-presentation", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/td-app-product-presentation/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26257"
+BASE_PATH = "/presentacion/td-app/"
