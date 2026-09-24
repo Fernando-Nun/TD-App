@@ -223,6 +223,11 @@ a {
   color: #7c3aed;
 }
 
+.td-mobile-menu .td-primary-button,
+.td-mobile-menu .td-primary-button:hover {
+  color: #fff;
+}
+
 .td-hero {
   position: relative;
   display: grid;
