@@ -1,5 +1,9 @@
-import { useEffect, useRef, type MutableRefObject } from 'react';
-import { createPhoneScene, type PhoneSceneHandle } from '@/lib/phone-scene';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
+import {
+  createPhoneScene,
+  STAGE_CONTENT,
+  type PhoneSceneHandle,
+} from '@/lib/phone-scene';
 
 export function PhoneShowcase({
   progressRef,
@@ -14,11 +18,24 @@ export function PhoneShowcase({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<PhoneSceneHandle | null>(null);
+  const [webglUnavailable, setWebglUnavailable] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = canvas?.parentElement;
     if (!canvas || !wrap) return;
+
+    const probe = document.createElement('canvas');
+    let context: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+    try {
+      context = probe.getContext('webgl2') ?? probe.getContext('webgl');
+    } catch {
+      context = null;
+    }
+    if (!context) {
+      setWebglUnavailable(true);
+      return;
+    }
 
     let handle: PhoneSceneHandle | null = null;
     try {
@@ -30,8 +47,10 @@ export function PhoneShowcase({
       });
       sceneRef.current = handle;
     } catch {
+      setWebglUnavailable(true);
       return;
     }
+    setWebglUnavailable(false);
 
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -62,6 +81,40 @@ export function PhoneShowcase({
   useEffect(() => {
     sceneRef.current?.setStage(stage);
   }, [stage]);
+
+  if (webglUnavailable) {
+    const content = STAGE_CONTENT[stage] ?? STAGE_CONTENT[0];
+    return (
+      <div
+        className="td-phone-fallback"
+        role="img"
+        aria-label={`Vista de TD-App: ${content.title}`}
+      >
+        <div className="td-phone-fallback-notch" />
+        <div className="td-phone-fallback-screen">
+          <div className="td-phone-fallback-status">
+            <span>TD-App</span>
+            <span>Hoy</span>
+          </div>
+          <div className="td-phone-fallback-heading">
+            <span>{content.kicker}</span>
+            <strong>{content.title}</strong>
+          </div>
+          <div
+            className="td-phone-fallback-pill"
+            style={{ color: content.pillColor, backgroundColor: content.pillBg }}
+          >
+            {content.pill}
+          </div>
+          <div className="td-phone-fallback-dots">
+            {STAGE_CONTENT.map((_, index) => (
+              <span key={index} className={index === stage ? 'is-active' : ''} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return <canvas ref={canvasRef} className="td-phone-3d-canvas" aria-hidden="true" />;
 }

@@ -11,6 +11,8 @@ import {
   ArrowDown,
   ArrowRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Coins,
   Download,
@@ -257,6 +259,8 @@ function Home() {
   const storyVisualRef = useRef<HTMLDivElement | null>(null);
   const storyOrbitRef = useRef<HTMLDivElement | null>(null);
   const storyProgressRef = useRef(0);
+  const rewardStageRef = useRef<HTMLDivElement | null>(null);
+  const [activeReward, setActiveReward] = useState(0);
   const reducedMotion = usePrefersReducedMotion();
   const isMobileStory = useMediaQuery(MOBILE_STORY_BREAKPOINT);
   const phoneMotionDisabled = reducedMotion || isMobileStory;
@@ -343,6 +347,31 @@ function Home() {
     const handleLeave = () => {
       node.style.setProperty('--parallax-x', '0');
       node.style.setProperty('--parallax-y', '0');
+    };
+
+    node.addEventListener('pointermove', handleMove);
+    node.addEventListener('pointerleave', handleLeave);
+    return () => {
+      node.removeEventListener('pointermove', handleMove);
+      node.removeEventListener('pointerleave', handleLeave);
+    };
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    const node = rewardStageRef.current;
+    if (!node || reducedMotion || window.matchMedia('(pointer: coarse)').matches) return;
+
+    const handleMove = (event: PointerEvent) => {
+      const rect = node.getBoundingClientRect();
+      const relX = (event.clientX - rect.left) / rect.width - 0.5;
+      const relY = (event.clientY - rect.top) / rect.height - 0.5;
+      node.style.setProperty('--reward-x', relX.toFixed(3));
+      node.style.setProperty('--reward-y', relY.toFixed(3));
+    };
+
+    const handleLeave = () => {
+      node.style.setProperty('--reward-x', '0');
+      node.style.setProperty('--reward-y', '0');
     };
 
     node.addEventListener('pointermove', handleMove);
@@ -603,23 +632,99 @@ function Home() {
               recordar que sí avanzaste.
             </p>
           </Reveal>
-          <div className="td-reward-grid">
-            {rewardItems.map((item, index) => (
-              <Reveal
-                key={item.testId}
-                as="article"
-                className="td-reward-card"
-                data-testid={item.testId}
-                delay={80 * index}
-              >
-                <span className="td-reward-label">
-                  {item.label}
-                  <small>{item.caption}</small>
+          <Reveal as="div" className="td-reward-showcase" delay={90}>
+            <div
+              ref={rewardStageRef}
+              className="td-reward-stage"
+              data-active-reward={activeReward}
+              data-testid="reward-showcase-stage"
+            >
+              <div className="td-reward-stage-grid" aria-hidden="true" />
+              <div className="td-reward-halo" aria-hidden="true" />
+              <div className="td-reward-orbit td-reward-orbit-one" aria-hidden="true" />
+              <div className="td-reward-orbit td-reward-orbit-two" aria-hidden="true" />
+              <div className="td-reward-ghost td-reward-ghost-left" aria-hidden="true">
+                <img
+                  src={rewardItems[(activeReward + rewardItems.length - 1) % rewardItems.length].image}
+                  alt=""
+                />
+              </div>
+              <div className="td-reward-ghost td-reward-ghost-right" aria-hidden="true">
+                <img
+                  src={rewardItems[(activeReward + 1) % rewardItems.length].image}
+                  alt=""
+                />
+              </div>
+              <div className="td-reward-pedestal" aria-hidden="true" />
+              <div className="td-reward-feature">
+                <span className="td-reward-index">
+                  RECOMPENSA {String(activeReward + 1).padStart(2, '0')} / {String(rewardItems.length).padStart(2, '0')}
                 </span>
-                <img src={item.image} alt={item.alt} />
-              </Reveal>
-            ))}
-          </div>
+                <div className="td-reward-object">
+                  <img
+                    key={rewardItems[activeReward].testId}
+                    src={rewardItems[activeReward].image}
+                    alt={rewardItems[activeReward].alt}
+                    data-testid={rewardItems[activeReward].testId}
+                  />
+                </div>
+                <div className="td-reward-feature-copy">
+                  <span>UN RECORDATORIO TANGIBLE</span>
+                  <h3>{rewardItems[activeReward].label}</h3>
+                  <p>{rewardItems[activeReward].caption}</p>
+                </div>
+              </div>
+              <div className="td-reward-callout td-reward-callout-top" aria-hidden="true">
+                <Coins size={15} />
+                Cada avance cuenta
+              </div>
+              <div className="td-reward-callout td-reward-callout-bottom" aria-hidden="true">
+                <Sparkles size={15} />
+                Hecho para volver a ti
+              </div>
+            </div>
+
+            <div className="td-reward-controls">
+              <button
+                className="td-reward-arrow"
+                type="button"
+                aria-label="Recompensa anterior"
+                onClick={() => setActiveReward((current) => (current + rewardItems.length - 1) % rewardItems.length)}
+              >
+                <ChevronLeft size={19} />
+              </button>
+              <div className="td-reward-choices" role="tablist" aria-label="Elegir recompensa">
+                {rewardItems.map((item, index) => (
+                  <button
+                    key={item.testId}
+                    className={`td-reward-choice${activeReward === index ? ' is-active' : ''}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeReward === index}
+                    aria-label={`Ver ${item.label}`}
+                    data-testid={`button-${item.testId}`}
+                    onClick={() => setActiveReward(index)}
+                  >
+                    <span className="td-reward-choice-image">
+                      <img src={item.image} alt="" />
+                    </span>
+                    <span className="td-reward-choice-copy">
+                      <strong>{item.label}</strong>
+                      <small>{item.caption}</small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <button
+                className="td-reward-arrow"
+                type="button"
+                aria-label="Siguiente recompensa"
+                onClick={() => setActiveReward((current) => (current + 1) % rewardItems.length)}
+              >
+                <ChevronRight size={19} />
+              </button>
+            </div>
+          </Reveal>
         </div>
       </section>
 
