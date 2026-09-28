@@ -42,3 +42,31 @@ mtime_ms = 1790628701655
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/c8b56abb-e226-45fb-980a-a9ad70057840/79e7e5a9-6b37-4c9d-8fc1-3dc6a3c8a5f2"
 storage_version_token = "1790628708811131"
 content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "XyiCuAy7hCz2o9myKGPE9"
+uri = "file://deliverables/TD-App-Documentacion.docx"
+type = "word_document"
+title = "TD-App — Documento editable"
+description = "Informe completo del equipo Pingüino en formato Word, con apartados de la rúbrica y capturas."
+logical_id = "c6b4df86-291b-47fb-a576-1349a7efb8df"
+content_hash = "sha256:861dd17acee686607d09d8831f458a5be989af0114b3c7480ddeee99e22233cc"
+size = 3700604
+mtime_ms = 1790639158168
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/c6b4df86-291b-47fb-a576-1349a7efb8df/09153435-cfcc-4bd6-8e22-377261745e7c"
+storage_version_token = "1790639163386211"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "j0Ai1OsdyfQI_WuaucRBN"
+uri = "file://deliverables/TD-App-Documentacion.pdf"
+type = "pdf"
+title = "TD-App — Documento PDF"
+description = "Versión lista para entregar, con el mismo contenido y evidencias visuales del proyecto."
+logical_id = "36c41095-01f8-436a-b0dd-ffa5f2438722"
+content_hash = "sha256:d4a15bb5f02cb64ded858366fac813ff2c044cb3df474ca96be4151243427cf3"
+size = 3926917
+mtime_ms = 1790639158168
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/36c41095-01f8-436a-b0dd-ffa5f2438722/c57bd7fe-81db-4caf-be20-e7d42edaf46d"
+storage_version_token = "1790639164471088"
+content_type = "application/pdf"

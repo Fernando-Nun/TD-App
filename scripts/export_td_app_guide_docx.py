@@ -3,7 +3,13 @@
 
 from __future__ import annotations
 
+import base64
+import html as html_lib
 import re
+import shutil
+import struct
+import subprocess
+import tempfile
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -11,57 +17,156 @@ from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 LOGO = ROOT / "app" / "src" / "main" / "res" / "drawable" / "logo.png"
-OUTPUT = ROOT / "docs" / "GUIA_TD_APP.docx"
+OUTPUT = ROOT / "Documentación" / "Documentacion_TD-App.docx"
+PDF_OUTPUT = ROOT / "Documentación" / "Documentacion_TD-App.pdf"
+SCREENSHOTS = [
+    (
+        ROOT / "attached_assets" / "0_imagen_2026-09-28_172137287_1790637697292.png",
+        "Inicio: resumen del saldo, el progreso y los accesos a las funciones principales.",
+    ),
+    (
+        ROOT / "attached_assets" / "0_imagen_2026-09-28_172208905_1790637728909.png",
+        "Pomodoro: temporizador de enfoque, controles de la sesión y consejo para el bloque.",
+    ),
+    (
+        ROOT / "attached_assets" / "0_imagen_2026-09-28_172246848_1790637766853.png",
+        "Misiones: seguimiento visual del avance por pasos y categorías.",
+    ),
+    (
+        ROOT / "attached_assets" / "0_imagen_2026-09-28_172323502_1790637803506.png",
+        "Tienda interna: catálogo visual de recompensas para canje con TD-Coins.",
+    ),
+    (
+        ROOT / "attached_assets" / "0_imagen_2026-09-28_172812503_1790638092508.png",
+        "Mi perfil: dictado o entrada manual, notas y retos principales.",
+    ),
+    (
+        ROOT / "attached_assets" / "0_imagen_2026-09-28_172922722_1790638162726.png",
+        "Plan personalizado: recordatorios sugeridos y pasos de acción para un desafío.",
+    ),
+    (
+        ROOT / "screenshots" / "td-app-landing-live.png",
+        "Sitio público: presentación del producto y acceso a la descarga de la aplicación.",
+    ),
+]
 
 GUIDE_MARKDOWN = """# TD-App: resumen del proyecto
 
-## Qué es TD-App
+## Ficha del proyecto
 
-TD-App es una aplicación Android para organizar metas, trabajar en bloques de concentración y dar seguimiento al progreso. La experiencia combina misiones, Pomodoro, retos, notas, recordatorios y recompensas internas.
+| Dato | Información |
+|---|---|
+| Nombre | TD-App |
+| Equipo | Pingüino |
+| Integrantes | Luis Fernando Núñez Díaz; Ricardo Baranda Cisneros; Bryan David Mariñelarena Ponce |
+| Producto | Aplicación Android nativa y sitio público informativo |
+| Fecha de elaboración | Septiembre de 2026 |
 
-## Funciones principales
+## Descripción, problema y público
 
-- **Misiones:** convertir una meta en pasos concretos y actualizar su progreso.
-- **Pomodoro y rachas:** registrar sesiones completadas y actividad diaria.
-- **Retos:** escribir o dictar un reto y, si se solicita, recibir un plan breve con pasos de acción y recordatorios.
-- **Notas y dictado:** guardar texto; el audio original no se conserva como historial.
-- **Recordatorios:** configurar horarios, categorías y periodos de silencio en el dispositivo.
-- **TD-Coins:** visualizar recompensas internas asociadas al progreso.
+TD-App es una herramienta de enfoque, hábitos y organización. Ayuda a convertir objetivos en acciones pequeñas, iniciar periodos de concentración y ver el avance mediante misiones, rachas y recompensas. El sitio público explica la propuesta y permite acceder a la descarga de Android.
 
-## Cómo se conecta para guardar los datos
+El problema que aborda es la dificultad para organizar tareas, comenzar una actividad y sostener la atención o un hábito. El público al que se dirige incluye personas que buscan apoyo para planificar sus actividades, en especial quienes experimentan retos de atención u organización, como algunas personas con TDAH. La aplicación es una herramienta de acompañamiento y no diagnostica ni sustituye atención profesional.
 
-1. La app guarda primero el estado en el teléfono para que el progreso siga disponible sin conexión.
-2. Cuando la persona inicia sesión y tiene internet, la app envía el estado en formato JSON por HTTPS a **https://td-app.replit.app**.
-3. Ese dominio es la API de TD-App, no la base de datos. La API verifica la sesión y guarda el estado de cada cuenta en PostgreSQL.
-4. El servidor devuelve el estado combinado y la app lo actualiza. Las operaciones se identifican para evitar aplicar dos veces un mismo reintento.
-5. Si no hay conexión, los cambios permanecen en el teléfono y la app vuelve a intentar sincronizar mientras está activa. No es una tarea garantizada en segundo plano.
+## Objetivo y funciones
 
-## Qué se sincroniza y qué permanece local
+La propuesta busca que el usuario pase de una intención general a un siguiente paso visible, con retroalimentación sencilla sobre su avance.
 
-- **Se sincroniza:** misiones y progreso, retos, notas en texto, TD-Coins y eventos, compras internas, rachas y Pomodoros completados.
-- **Permanece en el dispositivo:** horarios de recordatorios, periodos de silencio y controles temporales del Pomodoro.
-- **Audio:** se conserva el texto reconocido, no un historial de grabaciones.
+| Función | Uso |
+|---|---|
+| Inicio | Consulta saldo TD-Coins, Pomodoros, misiones, racha, frase del día y accesos rápidos. |
+| Pomodoro | Inicia, pausa o reinicia bloques de enfoque; registra sesiones y ofrece descansos. |
+| Misiones | Crea objetivos por categoría y meta de pasos; permite avanzar y recibir recompensas al completar. |
+| Retos y planes | Describe un desafío por texto o voz y solicita un plan con sugerencias y acciones concretas. |
+| Notas | Guarda texto reconocido o escrito y permite convertir una nota en una misión. El audio original no se mantiene como historial. |
+| Recordatorios | Configura avisos locales para enfoque, misiones o rachas, además de horarios silenciosos. |
+| Tienda interna | Presenta recompensas visuales y permite canjearlas con TD-Coins dentro de la aplicación; no procesa pagos ni pedidos en línea. |
+| Sitio público | Presenta cómo funciona, funciones, recompensas, preguntas frecuentes y descarga del APK. |
 
-La sincronización remota requiere una cuenta y conexión. Los recordatorios no se trasladan entre dispositivos.
+## Experiencia de uso y decisiones de diseño
 
-## Servicios conectados
+La aplicación organiza sus funciones en cinco secciones principales con navegación persistente. La pantalla de Inicio concentra el estado general; las demás se enfocan en una tarea concreta. Las tarjetas, indicadores de progreso, categorías con color y textos de acción hacen visible qué puede hacer el usuario y qué avance ha realizado. La interfaz usa fondo claro y acentos morados, turquesa y dorados.
 
-- **Resend:** entrega correos con códigos de recuperación de cuenta.
-- **Gemini:** propone planes para retos cuando la persona lo solicita. El texto del reto se envía al servicio para generar el plan.
-- **Reconocimiento de voz de Android:** convierte dictado en texto. La disponibilidad sin conexión depende del dispositivo; también se puede escribir manualmente.
+El sitio web acompaña a la aplicación, pero no es una tienda electrónica: sus recompensas son una presentación visual y sus botones llevan a la descarga. El producto combina una app nativa con un sitio responsivo para que la explicación del proyecto pueda consultarse en pantallas de distintos tamaños.
 
-## Seguridad y alcance actual
+## Accesibilidad y adaptación
 
-- La API exige una sesión para sincronizar datos y generar planes.
-- Las contraseñas se guardan como hashes; los tokens de sesión se validan en el servidor y vencen a los 30 días.
-- La app guarda el token en almacenamiento privado del teléfono, que no equivale a almacenamiento cifrado.
-- Las notificaciones son locales y Android puede retrasar su entrega.
-- Las TD-Coins y las compras son funciones internas: no procesan pagos ni incluyen inventario o entrega de productos.
-- TD-App es una herramienta de organización y acompañamiento; no diagnostica ni sustituye atención profesional.
+La aplicación incluye etiquetas descriptivas para controles, estados accesibles para selecciones, información semántica del progreso y orden de lectura en pantallas relevantes. La navegación cambia entre barra inferior y navegación lateral según el ancho de pantalla. Se han contemplado el aumento del tamaño de texto y el desplazamiento del contenido; estas decisiones no equivalen a una certificación universal de accesibilidad.
 
-## Resumen
+El dictado solicita permiso de micrófono, distingue errores habituales del servicio y conserva la escritura manual como alternativa. En el sitio web hay etiquetas para controles, textos alternativos para imágenes, una alternativa descriptiva al teléfono 3D cuando WebGL no está disponible y una preferencia para reducir movimiento.
 
-TD-App guarda primero el progreso en Android y, con sesión e internet, lo sincroniza mediante su API en **https://td-app.replit.app** con PostgreSQL. Los recordatorios y algunos controles permanecen locales. La sincronización, el dictado y las notificaciones dependen de la conexión y de las capacidades del dispositivo.
+## Tecnologías y arquitectura
+
+| Parte | Tecnologías y función |
+|---|---|
+| Aplicación Android | Kotlin, Jetpack Compose, Material 3, Gradle y Android API 26 o superior. Usa API del sistema para voz, notificaciones y almacenamiento local. |
+| Sitio público | React, TypeScript, Vite, Tailwind CSS y Three.js para la presentación visual y las animaciones. |
+| Servicio web | Node.js y Express para cuentas, recuperación de acceso, sincronización y planes personalizados. |
+| Datos remotos | PostgreSQL conserva cuentas, sesiones y el estado sincronizado de cada usuario. |
+| Infraestructura | El sitio y el servicio se publican en Replit; la app se comunica con el servicio mediante HTTPS. |
+
+## Persistencia y servicios en la nube
+
+La aplicación conserva un estado local en el dispositivo. Cuando la persona tiene una sesión iniciada y conexión, sincroniza los datos de la cuenta con el servicio web y PostgreSQL. Si la sincronización no está disponible, el progreso local se conserva y la app muestra su estado de conexión. La sincronización se reintenta mientras la aplicación está activa; no se presenta como una tarea en segundo plano garantizada.
+
+| Información | Dónde se conserva |
+|---|---|
+| Misiones, progreso, notas de texto, retos, monedas, rachas y sesiones completadas | Estado local y, con cuenta y conexión, sincronización con PostgreSQL. |
+| Horarios y preferencias de recordatorios | Dispositivo Android; no se sincronizan entre dispositivos. |
+| Temporizador en curso | Controles locales de la aplicación. |
+| Dictado | Se conserva el texto reconocido o editado; no un historial de grabaciones. |
+
+Servicios utilizados: Resend entrega correos para recuperar el acceso; Gemini genera propuestas de planes cuando se solicita esa función; el reconocedor de voz de Android transforma el dictado en texto. La disponibilidad del dictado depende del dispositivo y del servicio de voz. También es posible escribir manualmente.
+
+La sincronización remota requiere una cuenta y conexión. El servicio valida la sesión, usa contraseñas protegidas mediante hash y registra operaciones de sincronización para evitar duplicados al reintentar. El token de sesión se guarda en almacenamiento privado de la app, que no se debe confundir con almacenamiento cifrado.
+
+## Eventos, validaciones y respuestas
+
+| Acción | Validación o respuesta |
+|---|---|
+| Crear cuenta | Verifica formato de correo y longitud mínima de contraseña; informa si el correo ya está registrado. |
+| Crear misión | Requiere título, categoría y meta de 1 a 30 pasos; muestra el error antes de permitir guardar. |
+| Avanzar misión | Suma un paso y evita entregar de nuevo una recompensa por la misma finalización. |
+| Canjear recompensa | Solicita confirmación y comprueba saldo suficiente y que no exista un canje previo. |
+| Dictar una nota | Solicita permiso; si no hay servicio, permiso o reconocimiento, informa el problema y permite escribir. |
+| Generar plan | Envía el desafío cuando el usuario lo solicita; ante una falla remota puede ofrecer un borrador local. |
+| Sincronizar | Requiere sesión; conserva los cambios locales ante fallos de red y evita duplicar operaciones reintentadas. |
+| Borrar nota o reto | Pide confirmación antes de eliminar. |
+
+## Pruebas y verificación
+
+La cobertura automatizada existente incluye pruebas unitarias de progreso, rachas, recompensas y programación de recordatorios. También hay pruebas de interfaz para creación y avance de misiones, persistencia al reabrir la actividad, navegación adaptable a teléfono y tableta, etiquetas accesibles, texto ampliado, permisos de micrófono y eliminación confirmada de retos.
+
+El backend cuenta con pruebas de reconciliación de datos y recuperación de contraseña, incluidas expiración, uso único y límites de solicitudes. La verificación de este documento no equivale a una prueba de todos los dispositivos o servicios externos: no se ejecutaron pruebas instrumentadas con un dispositivo conectado, ni se comprobó una entrega real de notificaciones tras reiniciar, los gestos físicos de TalkBack o el dictado sin conexión. Tampoco se presenta la integración con Gemini o Resend como prueba de funcionamiento de sus servicios externos.
+
+## Retos técnicos y soluciones
+
+- **Mantener el avance cuando la conexión falla:** se conserva el estado local y se vuelve a intentar la sincronización mientras la app está activa; las operaciones identificadas reducen duplicados.
+- **Disponibilidad irregular del dictado:** el ingreso manual sigue disponible y los errores de permiso o servicio se comunican en pantalla.
+- **Diferencias en las notificaciones de Android:** los avisos se programan en el dispositivo, pero el sistema operativo puede retrasarlos. La app contempla su reprogramación después de eventos del sistema, sin afirmar que la entrega sea inmediata.
+- **Planes que dependen de un servicio remoto:** el plan se solicita explícitamente y puede mostrarse un borrador local si la generación remota no está disponible.
+- **Prototipo frente a producto funcional:** el equipo amplió la propuesta visual inicial en Figma hasta una aplicación Android funcional, con persistencia, navegación y conexión con servicios.
+
+## Retroalimentación de la primera fase
+
+El equipo no recibió comentarios formales en la primera fase. La mejora documentada fue pasar de un prototipo de Figma a una aplicación funcional, ampliando la experiencia con las funciones de organización, enfoque y seguimiento descritas en este informe.
+
+## Uso de inteligencia artificial y aportación del equipo
+
+El equipo reporta que utilizó inteligencia artificial como apoyo en gran parte de la página web, especialmente su estructura y animaciones; en la creación de todas las imágenes de la mercancía; y en animaciones, iconos y conexiones con APIs de la aplicación. El equipo llevó la propuesta desde el prototipo de Figma hasta el producto funcional y empleó esa asistencia en la construcción de la experiencia. No se atribuyen tareas a integrantes individuales porque no se especificaron responsabilidades por persona.
+
+## Enlaces del proyecto
+
+- Repositorio: https://github.com/Fernando-Nun/TD-App
+- Sitio público de TD-App: https://td-app.replit.app
+
+El sitio público respondió correctamente al momento de elaborar este informe. El mismo dominio publica los servicios de la API que utiliza la aplicación.
+
+## Conclusiones
+
+TD-App convierte metas amplias en acciones pequeñas que se pueden iniciar, seguir y reconocer. La combinación de Pomodoro, misiones, retos, notas, recordatorios y recompensas integra en una sola aplicación varios apoyos para la organización personal. La persistencia local permite conservar el avance ante cortes de conexión y la cuenta habilita su sincronización remota. La experiencia se complementa con una página pública de descarga y una interfaz que considera accesibilidad y adaptación de pantalla. Las limitaciones de servicios de voz, sincronización y notificaciones se indican para que el alcance quede claro.
+
+[[SCREENSHOTS]]
 """
 
 PURPLE = "7C3AED"
@@ -286,6 +391,115 @@ def add_logo(paragraph: ET.Element) -> None:
     sub(geometry, "a", "avLst")
 
 
+def add_picture(
+    paragraph: ET.Element,
+    image_bytes: bytes,
+    relationship_id: str,
+    image_id: int,
+    alt_text: str,
+    *,
+    max_width: int,
+    max_height: int,
+) -> None:
+    if image_bytes[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(f"Expected a PNG screenshot for {alt_text}")
+    pixel_width, pixel_height = struct.unpack(">II", image_bytes[16:24])
+    if not pixel_width or not pixel_height:
+        raise ValueError(f"Invalid screenshot dimensions for {alt_text}")
+
+    aspect = pixel_width / pixel_height
+    width = min(max_width, int(max_height * aspect))
+    height = int(width / aspect)
+
+    run = sub(paragraph, "w", "r")
+    drawing = sub(run, "w", "drawing")
+    inline = sub(drawing, "wp", "inline", {
+        "distT": "0", "distB": "0", "distL": "0", "distR": "0",
+    })
+    sub(inline, "wp", "extent", {"cx": str(width), "cy": str(height)})
+    sub(inline, "wp", "effectExtent", {"l": "0", "t": "0", "r": "0", "b": "0"})
+    sub(inline, "wp", "docPr", {"id": str(image_id), "name": f"Evidencia {image_id}", "descr": alt_text})
+    frame = sub(inline, "wp", "cNvGraphicFramePr")
+    sub(frame, "a", "graphicFrameLocks", {"noChangeAspect": "1"})
+    graphic = sub(inline, "a", "graphic")
+    graphic_data = sub(graphic, "a", "graphicData", {
+        "uri": "http://schemas.openxmlformats.org/drawingml/2006/picture",
+    })
+    pic = sub(graphic_data, "pic", "pic")
+    nv = sub(pic, "pic", "nvPicPr")
+    sub(nv, "pic", "cNvPr", {"id": str(image_id), "name": f"Evidencia {image_id}", "descr": alt_text})
+    sub(nv, "pic", "cNvPicPr")
+    blip_fill = sub(pic, "pic", "blipFill")
+    sub(blip_fill, "a", "blip", {q("r", "embed"): relationship_id})
+    stretch = sub(blip_fill, "a", "stretch")
+    sub(stretch, "a", "fillRect")
+    shape = sub(pic, "pic", "spPr")
+    transform = sub(shape, "a", "xfrm")
+    sub(transform, "a", "off", {"x": "0", "y": "0"})
+    sub(transform, "a", "ext", {"cx": str(width), "cy": str(height)})
+    geometry = sub(shape, "a", "prstGeom", {"prst": "rect"})
+    sub(geometry, "a", "avLst")
+
+
+def add_screenshot_gallery(parent: ET.Element) -> None:
+    add_page_break(parent)
+    add_paragraph(parent, "Evidencia visual", style="Heading1", before=250, after=110, keep_next=True)
+    add_paragraph(
+        parent,
+        "Capturas de la aplicación y del sitio público. Los textos bajo cada imagen identifican la pantalla.",
+        style="Normal",
+        after=130,
+    )
+    for pair_start in range(0, len(SCREENSHOTS), 2):
+        pair = SCREENSHOTS[pair_start : pair_start + 2]
+        table = sub(parent, "w", "tbl")
+        props = sub(table, "w", "tblPr")
+        sub(props, "w", "tblW", {q("w", "w"): str(CONTENT_WIDTH), q("w", "type"): "dxa"})
+        sub(props, "w", "tblLayout", {q("w", "type"): "fixed"})
+        borders = sub(props, "w", "tblBorders")
+        for edge_name in ("top", "left", "bottom", "right", "insideH", "insideV"):
+            sub(borders, "w", edge_name, {q("w", "val"): "nil"})
+        margins = sub(props, "w", "tblCellMar")
+        for edge_name, value in (("top", "60"), ("start", "70"), ("bottom", "60"), ("end", "70")):
+            sub(margins, "w", edge_name, {q("w", "w"): value, q("w", "type"): "dxa"})
+
+        widths = [CONTENT_WIDTH] if len(pair) == 1 else [CONTENT_WIDTH // 2, CONTENT_WIDTH - CONTENT_WIDTH // 2]
+        grid = sub(table, "w", "tblGrid")
+        for cell_width in widths:
+            sub(grid, "w", "gridCol", {q("w", "w"): str(cell_width)})
+        row = sub(table, "w", "tr")
+        sub(sub(row, "w", "trPr"), "w", "cantSplit")
+
+        for index, (image_path, caption) in enumerate(pair):
+            cell = sub(row, "w", "tc")
+            tcpr = sub(cell, "w", "tcPr")
+            cell_width = widths[index]
+            sub(tcpr, "w", "tcW", {q("w", "w"): str(cell_width), q("w", "type"): "dxa"})
+            if len(pair) == 1:
+                sub(tcpr, "w", "gridSpan", {q("w", "val"): "2"})
+            sub(tcpr, "w", "vAlign", {q("w", "val"): "center"})
+            image_paragraph = sub(cell, "w", "p")
+            paragraph_properties(image_paragraph, align="center", after=40)
+            screen_index = pair_start + index
+            image_width = int((5.8 if len(pair) == 1 else 3.0) * 914400)
+            image_height = int((4.0 if len(pair) == 1 else 6.25) * 914400)
+            add_picture(
+                image_paragraph,
+                image_path.read_bytes(),
+                f"rId{5 + screen_index}",
+                10 + screen_index,
+                caption,
+                max_width=image_width,
+                max_height=image_height,
+            )
+            caption_paragraph = sub(cell, "w", "p")
+            paragraph_properties(caption_paragraph, align="center", after=20)
+            add_text_run(caption_paragraph, caption, color=MUTED, size=17)
+
+        if pair_start + len(pair) < len(SCREENSHOTS):
+            add_page_break(parent)
+
+
 def make_table(parent: ET.Element, rows: list[list[str]], *, header: bool = True) -> ET.Element:
     if not rows:
         return sub(parent, "w", "tbl")
@@ -405,11 +619,11 @@ def make_cover(parent: ET.Element) -> None:
 
     p = sub(cell, "w", "p")
     paragraph_properties(p, style="CoverSubtitle", align="center", after=260)
-    add_text_run(p, "Resumen del proyecto y persistencia", color=INK, size=32)
+    add_text_run(p, "Proyecto, funcionamiento y evidencias", color=INK, size=30)
 
     p = sub(cell, "w", "p")
     paragraph_properties(p, style="CoverMeta", align="center", after=80)
-    add_text_run(p, "Android  ·  Organización  ·  Sincronización", color=MUTED, size=21)
+    add_text_run(p, "Equipo Pingüino  ·  Septiembre de 2026", color=MUTED, size=21)
 
     p = sub(cell, "w", "p")
     paragraph_properties(p, style="CoverTagline", align="center", before=220)
@@ -458,6 +672,10 @@ def build_document(markdown: str) -> bytes:
     while i < len(lines):
         line = lines[i].rstrip()
         if not line.strip():
+            i += 1
+            continue
+        if line.strip() == "[[SCREENSHOTS]]":
+            add_screenshot_gallery(body)
             i += 1
             continue
         if line.startswith("# "):
@@ -650,7 +868,7 @@ def make_header() -> bytes:
     set_attr(edge, "space", "5")
     set_attr(edge, "color", TEAL)
     add_text_run(p, "TD-APP", bold=True, color=DEEP_PURPLE, size=17)
-    add_text_run(p, "     GUÍA TÉCNICA Y DE PRESENTACIÓN", color=MUTED, size=17)
+    add_text_run(p, "     DOCUMENTACIÓN DEL PROYECTO Y EVIDENCIAS", color=MUTED, size=17)
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
@@ -676,6 +894,14 @@ def make_relationships() -> bytes:
         ("rId3", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer", "footer1.xml"),
         ("rId4", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image", "media/logo.png"),
     ]
+    entries.extend(
+        (
+            f"rId{5 + index}",
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+            f"media/evidence-{index + 1:02}.png",
+        )
+        for index in range(len(SCREENSHOTS))
+    )
     for rid, rel_type, target in entries:
         sub(root, "rel", "Relationship", {"Id": rid, "Type": rel_type, "Target": target})
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
@@ -722,11 +948,11 @@ def make_content_types() -> bytes:
 def make_core_properties() -> bytes:
     root = ET.Element(q("cp", "coreProperties"))
     title = sub(root, "dc", "title")
-    title.text = "TD-App — Resumen del proyecto y persistencia"
+    title.text = "TD-App — Documentación del proyecto"
     creator = sub(root, "dc", "creator")
     creator.text = "TD-App"
     subject = sub(root, "dc", "subject")
-    subject.text = "Funciones, persistencia de datos, API y alcance actual"
+    subject.text = "Proyecto, funciones, tecnologías, verificación y evidencias"
     language = sub(root, "dc", "language")
     language.text = "es-MX"
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
@@ -745,11 +971,12 @@ def make_app_properties() -> bytes:
     sub(variant, "vt", "i4").text = "1"
     titles = sub(root, "ep", "TitlesOfParts")
     title_vector = sub(titles, "vt", "vector", {"size": "1", "baseType": "lpstr"})
-    sub(title_vector, "vt", "lpstr").text = "TD-App — Resumen del proyecto y persistencia"
+    sub(title_vector, "vt", "lpstr").text = "TD-App — Documentación del proyecto"
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
 def write_docx(markdown: str) -> None:
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     document_xml = build_document(markdown)
     with zipfile.ZipFile(OUTPUT, "w", compression=zipfile.ZIP_DEFLATED) as docx:
         docx.writestr("[Content_Types].xml", make_content_types())
@@ -760,15 +987,230 @@ def write_docx(markdown: str) -> None:
         docx.writestr("word/header1.xml", make_header())
         docx.writestr("word/footer1.xml", make_footer())
         docx.writestr("word/media/logo.png", LOGO.read_bytes())
+        for index, (image_path, _) in enumerate(SCREENSHOTS, start=1):
+            docx.writestr(f"word/media/evidence-{index:02}.png", image_path.read_bytes())
         docx.writestr("docProps/core.xml", make_core_properties())
         docx.writestr("docProps/app.xml", make_app_properties())
 
 
+def inline_html(text: str) -> str:
+    escaped = html_lib.escape(text, quote=False)
+    escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
+    escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", escaped)
+    return escaped
+
+
+def screenshot_gallery_html() -> str:
+    pieces = [
+        '<section class="evidence-page">',
+        "<h1>Evidencia visual</h1>",
+        "<p>Capturas de la aplicación y del sitio público. Los textos bajo cada imagen identifican la pantalla.</p>",
+    ]
+    for pair_start in range(0, len(SCREENSHOTS), 2):
+        pair = SCREENSHOTS[pair_start : pair_start + 2]
+        pieces.append('<div class="evidence-pair">')
+        for image_path, caption in pair:
+            encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
+            alt = html_lib.escape(caption, quote=True)
+            pieces.extend([
+                '<figure class="evidence-card">',
+                f'<img src="data:image/png;base64,{encoded}" alt="{alt}">',
+                f"<figcaption>{inline_html(caption)}</figcaption>",
+                "</figure>",
+            ])
+        pieces.append("</div>")
+    pieces.append("</section>")
+    return "".join(pieces)
+
+
+def markdown_to_html(markdown: str) -> str:
+    lines = markdown.splitlines()
+    output: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i].rstrip()
+        if not line.strip():
+            i += 1
+            continue
+        if line.strip() == "[[SCREENSHOTS]]":
+            output.append(screenshot_gallery_html())
+            i += 1
+            continue
+        if line.startswith("# "):
+            i += 1
+            continue
+        if line.startswith("## "):
+            output.append(f"<h2>{inline_html(line[3:].strip())}</h2>")
+            i += 1
+            continue
+        if line.startswith("### "):
+            output.append(f"<h3>{inline_html(line[4:].strip())}</h3>")
+            i += 1
+            continue
+        if is_table_line(line):
+            table_lines: list[str] = []
+            while i < len(lines) and is_table_line(lines[i]):
+                table_lines.append(lines[i])
+                i += 1
+            rows = parse_table(table_lines)
+            if rows:
+                output.append("<table><thead><tr>")
+                output.extend(f"<th>{inline_html(cell)}</th>" for cell in rows[0])
+                output.append("</tr></thead><tbody>")
+                for row in rows[1:]:
+                    output.append("<tr>")
+                    output.extend(f"<td>{inline_html(cell)}</td>" for cell in row)
+                    output.append("</tr>")
+                output.append("</tbody></table>")
+            continue
+        if re.match(r"^\s*[-*]\s+", line):
+            output.append("<ul>")
+            while i < len(lines) and re.match(r"^\s*[-*]\s+", lines[i]):
+                item = re.sub(r"^\s*[-*]\s+", "", lines[i].strip())
+                output.append(f"<li>{inline_html(item)}</li>")
+                i += 1
+            output.append("</ul>")
+            continue
+        ordered = re.match(r"^\s*\d+\.\s+", line)
+        if ordered:
+            output.append("<ol>")
+            while i < len(lines) and re.match(r"^\s*\d+\.\s+", lines[i]):
+                item = re.sub(r"^\s*\d+\.\s+", "", lines[i].strip())
+                output.append(f"<li>{inline_html(item)}</li>")
+                i += 1
+            output.append("</ol>")
+            continue
+        if line.lstrip().startswith(">"):
+            quote_lines: list[str] = []
+            while i < len(lines) and lines[i].lstrip().startswith(">"):
+                quote_lines.append(lines[i].lstrip()[1:].strip())
+                i += 1
+            output.append(f"<blockquote>{inline_html(' '.join(quote_lines))}</blockquote>")
+            continue
+
+        paragraph_lines = [line.strip()]
+        i += 1
+        while i < len(lines):
+            candidate = lines[i].rstrip()
+            if (
+                not candidate.strip()
+                or candidate.startswith(("#", "|", ">", "[[SCREENSHOTS]]"))
+                or re.match(r"^\s*[-*]\s+", candidate)
+                or re.match(r"^\s*\d+\.\s+", candidate)
+            ):
+                break
+            paragraph_lines.append(candidate.strip())
+            i += 1
+        output.append(f"<p>{inline_html(' '.join(paragraph_lines))}</p>")
+    return "\n".join(output)
+
+
+def make_print_html(markdown: str) -> str:
+    logo = base64.b64encode(LOGO.read_bytes()).decode("ascii")
+    body = markdown_to_html(markdown)
+    return f"""<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>TD-App — Documentación del proyecto</title>
+  <style>
+    @page {{ size: letter; margin: 0.65in 0.68in 0.7in; }}
+    * {{ box-sizing: border-box; }}
+    body {{ margin: 0; color: #21123B; font: 10pt/1.45 Arial, sans-serif; }}
+    .cover {{
+      min-height: 9.2in; margin: 0; padding: 0.55in; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; background: #F7F3FF; break-after: page;
+    }}
+    .cover-band {{ width: 100%; height: 0.12in; margin-bottom: 0.65in;
+      background: linear-gradient(90deg, #7C3AED 0 34%, #14B8A6 34% 67%, #FBBF24 67%); }}
+    .cover img {{ width: 1.15in; height: 1.15in; object-fit: contain; margin: 0.25in 0; }}
+    .cover-label {{ color: #14B8A6; letter-spacing: 0.12em; font-weight: bold; font-size: 9pt; }}
+    .cover h1 {{ margin: 0.05in 0; font-size: 42pt; color: #4C1D95; }}
+    .cover h2 {{ margin: 0.1in 0 0.25in; border: 0; font-size: 19pt; color: #21123B; }}
+    .cover-meta {{ color: #6D647A; font-size: 11pt; }}
+    .cover-tagline {{ margin-top: 0.55in; font-size: 13pt; color: #7C3AED; font-style: italic; }}
+    h1, h2, h3 {{ color: #4C1D95; break-after: avoid; }}
+    h1 {{ margin: 0 0 0.16in; padding-bottom: 0.08in; font-size: 20pt;
+      border-bottom: 2px solid #14B8A6; }}
+    h2 {{ margin: 0.22in 0 0.09in; font-size: 15pt; }}
+    h3 {{ margin: 0.16in 0 0.06in; font-size: 12pt; color: #14B8A6; }}
+    p {{ margin: 0 0 0.11in; }}
+    ul, ol {{ margin: 0.03in 0 0.15in; padding-left: 0.25in; }}
+    li {{ margin: 0 0 0.055in; }}
+    table {{ width: 100%; margin: 0.1in 0 0.18in; border-collapse: collapse; font-size: 9pt; }}
+    th, td {{ padding: 0.07in 0.09in; border: 1px solid #DDD5EB; text-align: left; vertical-align: top; }}
+    th {{ color: #fff; background: #4C1D95; }}
+    tbody tr:nth-child(even) {{ background: #FAF8FD; }}
+    strong {{ color: #4C1D95; }}
+    code {{ padding: 0.01in 0.03in; color: #4C1D95; background: #F4F0FB; }}
+    .evidence-page {{ break-before: page; }}
+    .evidence-pair {{ display: grid; grid-template-columns: 1fr 1fr; gap: 0.18in;
+      align-items: start; break-inside: avoid; }}
+    .evidence-pair + .evidence-pair {{ break-before: page; }}
+    .evidence-card {{ margin: 0; padding: 0.08in; text-align: center; break-inside: avoid; }}
+    .evidence-card img {{ display: block; max-width: 100%; max-height: 6.25in;
+      width: auto; height: auto; margin: 0 auto 0.1in; object-fit: contain; }}
+    .evidence-card figcaption {{ color: #6D647A; font-size: 9pt; }}
+    .evidence-card:only-child {{ grid-column: 1 / -1; }}
+    .evidence-card:only-child img {{ max-height: 4in; max-width: 5.8in; }}
+    @media print {{
+      .evidence-pair, table, tr {{ break-inside: avoid; }}
+      .cover {{ height: 9.2in; }}
+    }}
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="cover-band"></div>
+    <p class="cover-label">DOCUMENTO DEL PROYECTO</p>
+    <img src="data:image/png;base64,{logo}" alt="Logotipo de TD-App">
+    <h1>TD-App</h1>
+    <h2>Proyecto, funcionamiento y evidencias</h2>
+    <p class="cover-meta">Equipo Pingüino · Septiembre de 2026</p>
+    <p class="cover-tagline">Pequeños pasos, grandes avances</p>
+  </section>
+  <main>{body}</main>
+</body>
+</html>"""
+
+
+def write_pdf(markdown: str) -> None:
+    chromium = shutil.which("chromium") or "/repl/tools/bin/chromium"
+    if not Path(chromium).is_file():
+        raise RuntimeError("Chromium is required to export the PDF.")
+    PDF_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="tdapp-document-") as temp_dir:
+        temp_path = Path(temp_dir)
+        html_path = temp_path / "document.html"
+        html_path.write_text(make_print_html(markdown), encoding="utf-8")
+        command = [
+            chromium,
+            "--headless=new",
+            "--disable-gpu",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--no-pdf-header-footer",
+            f"--user-data-dir={temp_path / 'profile'}",
+            f"--print-to-pdf={PDF_OUTPUT}",
+            html_path.as_uri(),
+        ]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        if result.returncode:
+            raise RuntimeError(f"Chromium PDF export failed: {result.stderr[-3000:]}")
+    if not PDF_OUTPUT.is_file() or PDF_OUTPUT.stat().st_size < 1000:
+        raise RuntimeError("Chromium did not create a usable PDF.")
+
+
 def main() -> None:
-    if not LOGO.is_file():
-        raise SystemExit(f"App logo not found: {LOGO}")
+    missing = [str(path) for path in [LOGO, *(image for image, _ in SCREENSHOTS)] if not path.is_file()]
+    if missing:
+        raise SystemExit("Missing document assets: " + ", ".join(missing))
     write_docx(GUIDE_MARKDOWN)
+    write_pdf(GUIDE_MARKDOWN)
     print(f"Created {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)")
+    print(f"Created {PDF_OUTPUT.relative_to(ROOT)} ({PDF_OUTPUT.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":
