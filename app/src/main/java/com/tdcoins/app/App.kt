@@ -116,6 +116,7 @@ private fun TDCoinsContent(
         }
     }
     var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
+    var pendingMissionTitle by rememberSaveable { mutableStateOf<String?>(null) }
     var coins by remember { mutableIntStateOf(initial.coins) }
     var pomodorosDone by remember { mutableIntStateOf(initial.pomodorosDone) }
     var pomodoroBaseline by remember { mutableIntStateOf(initial.pomodoroBaseline) }
@@ -357,6 +358,8 @@ private fun TDCoinsContent(
                 AppTab.MISSIONS -> MissionsScreen(
                     missions = missions,
                     onMissionsChange = { missions = it },
+                    initialMissionTitle = pendingMissionTitle,
+                    onInitialMissionTitleConsumed = { pendingMissionTitle = null },
                     onMissionCompleted = { mission ->
                         missions = missions.filterNot { it.id == mission.id }
                         deletedMissionIds = (deletedMissionIds + mission.id).distinct()
@@ -397,16 +400,7 @@ private fun TDCoinsContent(
                         voiceNotes = (listOf(note) + voiceNotes).distinct().take(20)
                     },
                     onCreateMission = { title ->
-                        missions = listOf(
-                            Mission(
-                                id = UUID.randomUUID().toString(),
-                                title = title,
-                                category = MissionCategory.FOCUS,
-                                target = 1,
-                                progress = 0,
-                                coins = calculateMissionReward(title, MissionCategory.FOCUS, 1),
-                            ),
-                        ) + missions
+                        pendingMissionTitle = title
                         tab = AppTab.MISSIONS
                     },
                 )

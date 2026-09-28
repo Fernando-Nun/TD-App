@@ -278,7 +278,6 @@ fun VoiceScreen(
                             Button(
                                 onClick = {
                                     onCreateMission(transcript.trim())
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                                 },
                                 modifier = Modifier.weight(1f),
                             ) {
@@ -465,7 +464,7 @@ fun VoiceScreen(
                             recognitionMessage = "Gemini está ocupado. Se creó un plan provisional adaptado a tu texto; puedes volver a intentarlo más tarde."
                             showAddChallenge = false
                         }
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     generatingPlan = false
                 }
             },

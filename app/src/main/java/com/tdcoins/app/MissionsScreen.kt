@@ -34,7 +34,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,10 +60,23 @@ fun MissionsScreen(
     onMissionsChange: (List<Mission>) -> Unit,
     onReward: (Mission) -> Unit = {},
     onMissionCompleted: ((Mission) -> Unit)? = null,
+    initialMissionTitle: String? = null,
+    onInitialMissionTitleConsumed: () -> Unit = {},
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     var showAdd by remember { mutableStateOf(false) }
     var celebratedId by remember { mutableStateOf<String?>(null) }
+    var dialogTitle by remember { mutableStateOf("") }
+
+    LaunchedEffect(initialMissionTitle) {
+        initialMissionTitle
+            ?.takeIf { it.isNotBlank() }
+            ?.let { title ->
+                dialogTitle = title
+                showAdd = true
+                onInitialMissionTitleConsumed()
+            }
+    }
 
     fun incrementMission(mission: Mission) {
         if (mission.completed) return
@@ -109,7 +121,10 @@ fun MissionsScreen(
                          Text("Completa y gana TD-Coins", color = MutedText, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
                     }
                     IconButton(
-                        onClick = { showAdd = true },
+                        onClick = {
+                            dialogTitle = ""
+                            showAdd = true
+                        },
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
@@ -144,7 +159,11 @@ fun MissionsScreen(
 
         if (showAdd) {
             AddMissionDialog(
-                onDismiss = { showAdd = false },
+                initialTitle = dialogTitle,
+                onDismiss = {
+                    dialogTitle = ""
+                    showAdd = false
+                },
                 onAdd = { title, category, target ->
                     val newMission = Mission(
                         id = java.util.UUID.randomUUID().toString(),
@@ -155,7 +174,8 @@ fun MissionsScreen(
                         coins = calculateMissionReward(title, category, target),
                     )
                     onMissionsChange(listOf(newMission) + missions)
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    dialogTitle = ""
                     showAdd = false
                 },
             )
@@ -282,10 +302,11 @@ private fun MissionCard(
 
 @Composable
 private fun AddMissionDialog(
+    initialTitle: String,
     onDismiss: () -> Unit,
     onAdd: (String, MissionCategory, Int) -> Unit,
 ) {
-    var title by remember { mutableStateOf("") }
+    var title by remember(initialTitle) { mutableStateOf(initialTitle) }
     var category by remember { mutableStateOf<MissionCategory?>(null) }
     var targetInput by remember { mutableStateOf("") }
     val target = targetInput.toIntOrNull()
@@ -307,7 +328,9 @@ private fun AddMissionDialog(
                     onValueChange = { title = it },
                     label = { Text("¿Qué quieres lograr?") },
                     singleLine = true,
-                    modifier = Modifier.semantics { traversalIndex = 0f },
+                    modifier = Modifier
+                        .semantics { traversalIndex = 0f }
+                        .testTag("mission-title-input"),
                 )
                 Text("Categoría", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Row(
@@ -360,10 +383,12 @@ private fun AddMissionDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val selectedCategory = category
-                    val validTarget = target
-                    if (canCreate && selectedCategory != null && validTarget != null) {
-                        onAdd(title.trim(), selectedCategory, validTarget)
+                    category?.let { selectedCategory ->
+                        target?.takeIf { it in 1..30 }?.let { validTarget ->
+                            if (title.isNotBlank()) {
+                                onAdd(title.trim(), selectedCategory, validTarget)
+                            }
+                        }
                     }
                 },
                 enabled = canCreate,

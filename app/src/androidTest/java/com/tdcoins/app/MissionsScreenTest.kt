@@ -48,14 +48,38 @@ class MissionsScreenTest {
         composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
         composeRule.onNodeWithText("Enfoque").performClick()
         composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
+        composeRule.onNodeWithText("Pasos meta (1–30)").performTextReplacement("0")
+        composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
         composeRule.onNodeWithText("Pasos meta (1–30)").performTextReplacement("5")
         composeRule.onNodeWithText("Agregar Misión").assertIsEnabled().performClick()
 
         composeRule.onNodeWithText("Preparar exposición").assertExists()
         composeRule.runOnIdle {
             assertEquals("Preparar exposición", missions.single().title)
+            assertEquals(MissionCategory.FOCUS, missions.single().category)
             assertEquals(5, missions.single().target)
         }
+    }
+
+    @Test
+    fun missionOpenedFromVoiceStillRequiresManualStepCount() {
+        var pendingTitle by mutableStateOf<String?>("Preparar exposición")
+
+        composeRule.setContent {
+            TDCoinsTheme {
+                MissionsScreen(
+                    missions = emptyList(),
+                    onMissionsChange = {},
+                    initialMissionTitle = pendingTitle,
+                    onInitialMissionTitleConsumed = { pendingTitle = null },
+                )
+            }
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("mission-title-input").assertTextEquals("Preparar exposición")
+        composeRule.onNodeWithTag("mission-target-input").assertTextEquals("")
+        composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
     }
 
     @Test
