@@ -9,11 +9,13 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasProgressBarRangeInfo
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
@@ -41,7 +43,12 @@ class MissionsScreenTest {
 
         composeRule.onNodeWithContentDescription("Agregar misión").performClick()
         composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
+        composeRule.onNodeWithTag("mission-target-input").assertTextEquals("")
         composeRule.onNodeWithText("¿Qué quieres lograr?").performTextReplacement("Preparar exposición")
+        composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
+        composeRule.onNodeWithText("Enfoque").performClick()
+        composeRule.onNodeWithText("Agregar Misión").assertIsNotEnabled()
+        composeRule.onNodeWithText("Pasos meta (1–30)").performTextReplacement("5")
         composeRule.onNodeWithText("Agregar Misión").assertIsEnabled().performClick()
 
         composeRule.onNodeWithText("Preparar exposición").assertExists()

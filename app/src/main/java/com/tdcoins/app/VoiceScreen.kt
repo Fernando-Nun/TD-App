@@ -54,7 +54,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -81,6 +83,7 @@ fun VoiceScreen(
     },
 ) {
     val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     var recording by remember { mutableStateOf(false) }
     var transcript by remember { mutableStateOf("") }
@@ -89,6 +92,7 @@ fun VoiceScreen(
     var showPlan by remember { mutableStateOf(false) }
     var showAddChallenge by remember { mutableStateOf(false) }
     var showClearNotes by remember { mutableStateOf(false) }
+    var challengeToDelete by remember { mutableStateOf<VoiceChallenge?>(null) }
     var generatingPlan by remember { mutableStateOf(false) }
     val speechRecognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) {
@@ -272,7 +276,10 @@ fun VoiceScreen(
                                 Text("Guardar nota")
                             }
                             Button(
-                                onClick = { onCreateMission(transcript.trim()) },
+                                onClick = {
+                                    onCreateMission(transcript.trim())
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                },
                                 modifier = Modifier.weight(1f),
                             ) {
                                 Text("Crear misión")
@@ -358,13 +365,15 @@ fun VoiceScreen(
                     Text(challenge.text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     Text("Plan personalizado listo", color = MutedText, fontSize = 10.sp)
                 }
-                TextButton(
-                    onClick = {
-                        selectedIds = selectedIds - challenge.id
-                        onChallengeDeleted(challenge.id)
-                    },
+                IconButton(
+                    onClick = { challengeToDelete = challenge },
+                    modifier = Modifier.testTag("delete-challenge-${challenge.id}"),
                 ) {
-                    Text("Quitar", color = Color(0xFFB91C1C))
+                    Icon(
+                        Icons.Filled.DeleteOutline,
+                        contentDescription = "Eliminar reto principal ${challenge.text}",
+                        tint = Color(0xFFB91C1C),
+                    )
                 }
                 Box(
                     modifier = Modifier
@@ -415,6 +424,29 @@ fun VoiceScreen(
             },
         )
     }
+    challengeToDelete?.let { challenge ->
+        AlertDialog(
+            onDismissRequest = { challengeToDelete = null },
+            title = { Text("¿Eliminar reto principal?") },
+            text = { Text("Se quitará “${challenge.text}” de tus retos principales.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedIds = selectedIds - challenge.id
+                        onChallengeDeleted(challenge.id)
+                        challengeToDelete = null
+                    },
+                ) {
+                    Text("Eliminar", color = Color(0xFFB91C1C))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { challengeToDelete = null }) {
+                    Text("Cancelar")
+                }
+            },
+        )
+    }
     if (showAddChallenge) {
         AddChallengeDialog(
             generating = generatingPlan,
@@ -433,6 +465,7 @@ fun VoiceScreen(
                             recognitionMessage = "Gemini está ocupado. Se creó un plan provisional adaptado a tu texto; puedes volver a intentarlo más tarde."
                             showAddChallenge = false
                         }
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                     generatingPlan = false
                 }
             },

@@ -42,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -60,6 +62,7 @@ fun MissionsScreen(
     onReward: (Mission) -> Unit = {},
     onMissionCompleted: ((Mission) -> Unit)? = null,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
     var showAdd by remember { mutableStateOf(false) }
     var celebratedId by remember { mutableStateOf<String?>(null) }
 
@@ -152,6 +155,7 @@ fun MissionsScreen(
                         coins = calculateMissionReward(title, category, target),
                     )
                     onMissionsChange(listOf(newMission) + missions)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                     showAdd = false
                 },
             )
@@ -282,8 +286,16 @@ private fun AddMissionDialog(
     onAdd: (String, MissionCategory, Int) -> Unit,
 ) {
     var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(MissionCategory.FOCUS) }
-    var target by remember { mutableIntStateOf(5) }
+    var category by remember { mutableStateOf<MissionCategory?>(null) }
+    var targetInput by remember { mutableStateOf("") }
+    val target = targetInput.toIntOrNull()
+    val targetIsValid = target != null && target in 1..30
+    val canCreate = title.isNotBlank() && category != null && targetIsValid
+    val reward = category?.takeIf { title.isNotBlank() }?.let { selectedCategory ->
+        target?.takeIf { targetIsValid }?.let { validTarget ->
+            calculateMissionReward(title, selectedCategory, validTarget)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -318,23 +330,43 @@ private fun AddMissionDialog(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
-                        value = target.toString(),
-                        onValueChange = { target = it.toIntOrNull()?.coerceIn(1, 30) ?: target },
-                        label = { Text("Pasos meta") },
+                        value = targetInput,
+                        onValueChange = { value ->
+                            targetInput = value.filter(Char::isDigit).take(2)
+                        },
+                        label = { Text("Pasos meta (1–30)") },
+                        isError = targetInput.isNotEmpty() && !targetIsValid,
+                        supportingText = {
+                            if (targetInput.isNotEmpty() && !targetIsValid) {
+                                Text("Ingresa un número del 1 al 30")
+                            }
+                        },
                         singleLine = true,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("mission-target-input"),
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Recompensa automática", color = MutedText, fontSize = 11.sp)
-                        Text("${calculateMissionReward(title, category, target)} TD-Coins", fontWeight = FontWeight.Bold, color = PrimaryPurple)
+                        Text(
+                            reward?.let { "$it TD-Coins" } ?: "Completa los campos requeridos",
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryPurple,
+                        )
                     }
                 }
             }
         },
         confirmButton = {
             Button(
-                onClick = { if (title.isNotBlank()) onAdd(title.trim(), category, target) },
-                enabled = title.isNotBlank(),
+                onClick = {
+                    val selectedCategory = category
+                    val validTarget = target
+                    if (canCreate && selectedCategory != null && validTarget != null) {
+                        onAdd(title.trim(), selectedCategory, validTarget)
+                    }
+                },
+                enabled = canCreate,
             ) {
                 Text("Agregar Misión")
             }
