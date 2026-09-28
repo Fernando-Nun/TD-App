@@ -28,3 +28,17 @@ mtime_ms = 1790627814767
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/1c789320-9b13-4d6a-9732-6a4aa1816873/212cc506-1a9d-4910-9b3d-c1a4f74ff86f"
 storage_version_token = "1790627870379928"
 content_type = "text/markdown"
+
+[[outputs]]
+id = "EltirvYGwoE3gnWH-mB7Y"
+uri = "file://docs/GUIA_TD_APP.docx"
+type = "word_document"
+title = "TD-App — Guía técnica y de presentación"
+description = "Documento Word con portada y logotipo de la app, paleta morada y turquesa, índice, tablas, arquitectura, sincronización, Resend y guion para clientes."
+logical_id = "c8b56abb-e226-45fb-980a-a9ad70057840"
+content_hash = "sha256:719a3adbaf7fcb524c53a2f8022c8bbb9c18987c1ece46c42f7964b5de29ed96"
+size = 897234
+mtime_ms = 1790628701655
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/c8b56abb-e226-45fb-980a-a9ad70057840/79e7e5a9-6b37-4c9d-8fc1-3dc6a3c8a5f2"
+storage_version_token = "1790628708811131"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
