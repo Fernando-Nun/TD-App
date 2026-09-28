@@ -37,7 +37,7 @@ import {
 } from 'wouter';
 
 const queryClient = new QueryClient();
-const downloadPath = '/downloads/td-app.apk';
+const downloadPath = '/downloads/td-app.apk?v=1.9';
 
 const storyScenes = [
   {
