@@ -10,9 +10,59 @@ from xml.etree import ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "docs" / "ARQUITECTURA_Y_PRESENTACION_TD_APP.md"
 LOGO = ROOT / "app" / "src" / "main" / "res" / "drawable" / "logo.png"
 OUTPUT = ROOT / "docs" / "GUIA_TD_APP.docx"
+
+GUIDE_MARKDOWN = """# TD-App: resumen del proyecto
+
+## Qué es TD-App
+
+TD-App es una aplicación Android para organizar metas, trabajar en bloques de concentración y dar seguimiento al progreso. La experiencia combina misiones, Pomodoro, retos, notas, recordatorios y recompensas internas.
+
+## Funciones principales
+
+- **Misiones:** convertir una meta en pasos concretos y actualizar su progreso.
+- **Pomodoro y rachas:** registrar sesiones completadas y actividad diaria.
+- **Retos:** escribir o dictar un reto y, si se solicita, recibir un plan breve con pasos de acción y recordatorios.
+- **Notas y dictado:** guardar texto; el audio original no se conserva como historial.
+- **Recordatorios:** configurar horarios, categorías y periodos de silencio en el dispositivo.
+- **TD-Coins:** visualizar recompensas internas asociadas al progreso.
+
+## Cómo se conecta para guardar los datos
+
+1. La app guarda primero el estado en el teléfono para que el progreso siga disponible sin conexión.
+2. Cuando la persona inicia sesión y tiene internet, la app envía el estado en formato JSON por HTTPS a **https://td-app.replit.app**.
+3. Ese dominio es la API de TD-App, no la base de datos. La API verifica la sesión y guarda el estado de cada cuenta en PostgreSQL.
+4. El servidor devuelve el estado combinado y la app lo actualiza. Las operaciones se identifican para evitar aplicar dos veces un mismo reintento.
+5. Si no hay conexión, los cambios permanecen en el teléfono y la app vuelve a intentar sincronizar mientras está activa. No es una tarea garantizada en segundo plano.
+
+## Qué se sincroniza y qué permanece local
+
+- **Se sincroniza:** misiones y progreso, retos, notas en texto, TD-Coins y eventos, compras internas, rachas y Pomodoros completados.
+- **Permanece en el dispositivo:** horarios de recordatorios, periodos de silencio y controles temporales del Pomodoro.
+- **Audio:** se conserva el texto reconocido, no un historial de grabaciones.
+
+La sincronización remota requiere una cuenta y conexión. Los recordatorios no se trasladan entre dispositivos.
+
+## Servicios conectados
+
+- **Resend:** entrega correos con códigos de recuperación de cuenta.
+- **Gemini:** propone planes para retos cuando la persona lo solicita. El texto del reto se envía al servicio para generar el plan.
+- **Reconocimiento de voz de Android:** convierte dictado en texto. La disponibilidad sin conexión depende del dispositivo; también se puede escribir manualmente.
+
+## Seguridad y alcance actual
+
+- La API exige una sesión para sincronizar datos y generar planes.
+- Las contraseñas se guardan como hashes; los tokens de sesión se validan en el servidor y vencen a los 30 días.
+- La app guarda el token en almacenamiento privado del teléfono, que no equivale a almacenamiento cifrado.
+- Las notificaciones son locales y Android puede retrasar su entrega.
+- Las TD-Coins y las compras son funciones internas: no procesan pagos ni incluyen inventario o entrega de productos.
+- TD-App es una herramienta de organización y acompañamiento; no diagnostica ni sustituye atención profesional.
+
+## Resumen
+
+TD-App guarda primero el progreso en Android y, con sesión e internet, lo sincroniza mediante su API en **https://td-app.replit.app** con PostgreSQL. Los recordatorios y algunos controles permanecen locales. La sincronización, el dictado y las notificaciones dependen de la conexión y de las capacidades del dispositivo.
+"""
 
 PURPLE = "7C3AED"
 DEEP_PURPLE = "4C1D95"
@@ -355,18 +405,18 @@ def make_cover(parent: ET.Element) -> None:
 
     p = sub(cell, "w", "p")
     paragraph_properties(p, style="CoverSubtitle", align="center", after=260)
-    add_text_run(p, "Guía técnica y de presentación", color=INK, size=32)
+    add_text_run(p, "Resumen del proyecto y persistencia", color=INK, size=32)
 
     p = sub(cell, "w", "p")
     paragraph_properties(p, style="CoverMeta", align="center", after=80)
-    add_text_run(p, "Android  ·  Jetpack Compose  ·  Sincronización  ·  Resend", color=MUTED, size=21)
+    add_text_run(p, "Android  ·  Organización  ·  Sincronización", color=MUTED, size=21)
 
     p = sub(cell, "w", "p")
     paragraph_properties(p, style="CoverTagline", align="center", before=220)
     add_text_run(p, "Pequeños pasos, grandes avances", italic=True, color=PURPLE, size=22)
 
     add_paragraph(parent, "", after=220)
-    add_paragraph(parent, "Arquitectura actual · funciones implementadas · presentación al cliente", align="center", color=MUTED, after=180)
+    add_paragraph(parent, "Funciones principales · persistencia · alcance actual", align="center", color=MUTED, after=180)
     add_page_break(parent)
 
 
@@ -402,13 +452,6 @@ def build_document(markdown: str) -> bytes:
     body = sub(document, "w", "body")
 
     make_cover(body)
-
-    headings = [line[3:].strip() for line in markdown.splitlines() if line.startswith("## ")]
-    add_paragraph(body, "Contenido", style="Heading1", after=160)
-    for title in headings:
-        add_paragraph(body, "•  " + title, style="TOCLine", after=75)
-    add_paragraph(body, "Guía preparada a partir del código actual del proyecto.", style="TOCNote", before=180, color=MUTED)
-    add_page_break(body)
 
     lines = markdown.splitlines()
     i = 0
@@ -679,11 +722,11 @@ def make_content_types() -> bytes:
 def make_core_properties() -> bytes:
     root = ET.Element(q("cp", "coreProperties"))
     title = sub(root, "dc", "title")
-    title.text = "TD-App — Guía técnica y de presentación"
+    title.text = "TD-App — Resumen del proyecto y persistencia"
     creator = sub(root, "dc", "creator")
     creator.text = "TD-App"
     subject = sub(root, "dc", "subject")
-    subject.text = "Jetpack Compose, arquitectura Android, sincronización y presentación comercial"
+    subject.text = "Funciones, persistencia de datos, API y alcance actual"
     language = sub(root, "dc", "language")
     language.text = "es-MX"
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
@@ -702,7 +745,7 @@ def make_app_properties() -> bytes:
     sub(variant, "vt", "i4").text = "1"
     titles = sub(root, "ep", "TitlesOfParts")
     title_vector = sub(titles, "vt", "vector", {"size": "1", "baseType": "lpstr"})
-    sub(title_vector, "vt", "lpstr").text = "TD-App — Guía técnica y de presentación"
+    sub(title_vector, "vt", "lpstr").text = "TD-App — Resumen del proyecto y persistencia"
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
@@ -722,11 +765,9 @@ def write_docx(markdown: str) -> None:
 
 
 def main() -> None:
-    if not SOURCE.is_file():
-        raise SystemExit(f"Markdown source not found: {SOURCE}")
     if not LOGO.is_file():
         raise SystemExit(f"App logo not found: {LOGO}")
-    write_docx(SOURCE.read_text(encoding="utf-8"))
+    write_docx(GUIDE_MARKDOWN)
     print(f"Created {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)")
 
 
