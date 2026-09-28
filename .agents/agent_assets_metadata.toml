@@ -14,3 +14,17 @@ mtime_ms = 1789934486885
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/f7d3d635-2b43-4f7a-84de-5c30ea1abb19/21a0cda5-b151-42ad-bd83-babd2289491f"
 storage_version_token = "1789934498480005"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "JrF03uOntdn5hYxSrmGba"
+uri = "file://docs/ARQUITECTURA_Y_PRESENTACION_TD_APP.md"
+type = "text"
+title = "Guía técnica y comercial de TD-App"
+description = "Mapa de Jetpack Compose, arquitectura Android/API, sincronización, Resend y guion de presentación al cliente."
+logical_id = "1c789320-9b13-4d6a-9732-6a4aa1816873"
+content_hash = "sha256:a67fb7984797e5d95c41ba035783b1b8fa9031bd908497aaccc88273e98305b5"
+size = 19266
+mtime_ms = 1790627814767
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:ff1575fa-9b19-4d13-a362-aa963994f764/1c789320-9b13-4d6a-9732-6a4aa1816873/212cc506-1a9d-4910-9b3d-c1a4f74ff86f"
+storage_version_token = "1790627870379928"
+content_type = "text/markdown"

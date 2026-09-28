@@ -46,7 +46,7 @@ Mantener la aplicación Android 100% Kotlin y Jetpack Compose; no migrarla a web
 ## Gotchas
 
 - La interfaz Android no tiene preview web en Replit; se valida con Gradle y en dispositivo/emulador.
-- `SYNC_API_URL` se inyecta al compilar Android; si no se define usa `REPLIT_DEV_DOMAIN`.
+- `SYNC_API_URL` se inyecta al compilar Android; si no se define usa `https://td-app.replit.app`.
 - No ejecutar `pnpm dev` en la raíz; usar el workflow administrado del artefacto.
 
 ## Pointers
