@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/td-app-pitch/"
+title = "TD-App — Presentación"
+description = "Presentación comercial de TD-App para jueces, basada en el contenido aprobado y con capturas reales de la app."
+version = "1.0.0"
+id = "artifacts/td-app-pitch-deck"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/td-app-pitch/" ]
+localPort = 23485
+
+[services.development]
+run = "pnpm --filter @workspace/td-app-pitch-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/td-app-pitch-deck", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/td-app-pitch-deck/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23485"
+BASE_PATH = "/td-app-pitch/"
