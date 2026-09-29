@@ -1,0 +1,63 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background:
+  kind: linearGradient
+  angleDeg: 135
+  stops:
+    - { offset: 0, color: { kind: rgb, value: "#1a0a2e" } }
+    - { offset: 0.65, color: { kind: rgb, value: "#3d1764" } }
+    - { offset: 1, color: { kind: rgb, value: "#7c3aed" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+assets:
+  logo: { src: "assets/td-app-logo.png", mimeType: "image/png" }
+elements:
+  - id: logo
+    frame: { x: 1470, y: 110, width: 230, height: 230 }
+    type: image
+    assetId: logo
+    fit: contain
+    altText: "Logo de TD-App"
+  - id: label
+    frame: { x: 150, y: 125, width: 700, height: 45 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "08  /  EL SIGUIENTE PASO", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#62ddca" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 150, y: 250, width: 1150, height: 330 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Ahora toca escuchar.", font: { kind: family, family: "Space Grotesk" }, sizePt: 64, weight: 700, color: { kind: rgb, value: "#f7f2ff" } }
+  - id: sub
+    frame: { x: 155, y: 630, width: 860, height: 200 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Validar TD-App con usuarios reales es el siguiente paso aún por realizar.", font: { kind: family, family: "DM Sans" }, sizePt: 27, weight: 500, color: { kind: rgb, value: "#e7dcfa" } }
+  - id: card
+    frame: { x: 150, y: 850, width: 1320, height: 180 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 28 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f7f2ff" } }
+    body:
+      verticalAlign: middle
+      paragraphs:
+        - runs:
+            - { text: "PREGUNTAR  ·  OBSERVAR  ·  AJUSTAR", font: { kind: family, family: "Space Grotesk" }, sizePt: 31, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 1 }
+        - runs:
+            - { text: "Para que los pequeños pasos estén hechos para personas reales.", font: { kind: family, family: "DM Sans" }, sizePt: 20, weight: 500, color: { kind: rgb, value: "#655b76" } }
+  - id: end
+    frame: { x: 1510, y: 790, width: 280, height: 220 }
+    type: text
+    body:
+      paragraphs:
+        - align: right
+          runs:
+            - { text: "Pequeños pasos.\nAvances visibles.", font: { kind: family, family: "Space Grotesk" }, sizePt: 22, weight: 600, color: { kind: rgb, value: "#f7ba67" } }

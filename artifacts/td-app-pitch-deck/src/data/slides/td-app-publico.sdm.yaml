@@ -1,0 +1,65 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background:
+  kind: linearGradient
+  angleDeg: 115
+  stops:
+    - { offset: 0, color: { kind: rgb, value: "#f7f2ff" } }
+    - { offset: 1, color: { kind: rgb, value: "#e5f8f4" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+elements:
+  - id: badge
+    frame: { x: 150, y: 125, width: 560, height: 44 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "03  /  PARA QUIÉN", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 150, y: 210, width: 1090, height: 330 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Para quien necesita\nmás estructura, no más presión.", font: { kind: family, family: "Space Grotesk" }, sizePt: 44, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+  - id: intro
+    frame: { x: 155, y: 570, width: 820, height: 170 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "TD-App acompaña a personas con días llenos, atención cambiante o ganas de encontrar un ritmo propio.", font: { kind: family, family: "DM Sans" }, sizePt: 22, weight: 500, color: { kind: rgb, value: "#655b76" } }
+  - id: halo
+    frame: { x: 1230, y: 135, width: 530, height: 530 }
+    type: shape
+    geometry: { kind: preset, preset: ellipse }
+    fill: { kind: solid, color: { kind: rgb, value: "#c6b1ff" }, opacity: 0.6 }
+  - id: circle
+    frame: { x: 1320, y: 225, width: 350, height: 350 }
+    type: shape
+    geometry: { kind: preset, preset: ellipse }
+    fill: { kind: solid, color: { kind: rgb, value: "#7c3aed" } }
+  - id: quote
+    frame: { x: 1370, y: 305, width: 250, height: 180 }
+    type: text
+    body:
+      verticalAlign: middle
+      paragraphs:
+        - align: center
+          runs:
+            - { text: "A TU RITMO", font: { kind: family, family: "Space Grotesk" }, sizePt: 30, weight: 700, color: { kind: rgb, value: "#f7f2ff" } }
+  - id: audience
+    frame: { x: 150, y: 790, width: 1570, height: 230 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 28 }
+    fill: { kind: solid, color: { kind: rgb, value: "#ffffff" }, opacity: 0.7 }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "ESTUDIANTES", font: { kind: family, family: "DM Sans" }, sizePt: 17, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 2 }
+            - { text: "     PERSONAS QUE BUSCAN ORGANIZARSE", font: { kind: family, family: "DM Sans" }, sizePt: 17, weight: 700, color: { kind: rgb, value: "#1a0a2e" }, letterSpacingPt: 1 }
+        - runs:
+            - { text: "Incluye a algunas personas con TDAH, sin presentar la app como diagnóstico ni tratamiento.", font: { kind: family, family: "DM Sans" }, sizePt: 22, weight: 500, color: { kind: rgb, value: "#4c3862" } }

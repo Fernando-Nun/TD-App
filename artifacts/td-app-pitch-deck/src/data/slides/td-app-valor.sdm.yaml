@@ -1,0 +1,75 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background: { kind: solid, color: { kind: rgb, value: "#7c3aed" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+elements:
+  - id: orb
+    frame: { x: 1330, y: -90, width: 700, height: 700 }
+    type: shape
+    geometry: { kind: preset, preset: ellipse }
+    fill: { kind: solid, color: { kind: rgb, value: "#c6b1ff" }, opacity: 0.32 }
+  - id: label
+    frame: { x: 150, y: 120, width: 700, height: 80 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "07  /  EL VALOR QUE BUSCAMOS", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#f7ba67" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 150, y: 220, width: 1190, height: 470 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Menos fricción para empezar.\nMás claridad para seguir.", font: { kind: family, family: "Space Grotesk" }, sizePt: 48, weight: 700, color: { kind: rgb, value: "#f7f2ff" } }
+  - id: intro
+    frame: { x: 155, y: 690, width: 840, height: 110 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Diseñamos un apoyo que respeta el ritmo propio.", font: { kind: family, family: "DM Sans" }, sizePt: 22, weight: 500, color: { kind: rgb, value: "#e7dcfa" } }
+  - id: v1
+    frame: { x: 150, y: 820, width: 380, height: 170 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 24 }
+    fill: { kind: solid, color: { kind: rgb, value: "#62ddca" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "EMPEZAR", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#1a0a2e" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Reducir fricción", font: { kind: family, family: "Space Grotesk" }, sizePt: 27, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+  - id: v2
+    frame: { x: 590, y: 820, width: 380, height: 170 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 24 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f2a5d1" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "RECONOCER", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Hacer visible", font: { kind: family, family: "Space Grotesk" }, sizePt: 27, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+  - id: v3
+    frame: { x: 1030, y: 820, width: 380, height: 170 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 24 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f7ba67" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "AVANZAR", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Sin comparar", font: { kind: family, family: "Space Grotesk" }, sizePt: 27, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+  - id: foot
+    frame: { x: 1500, y: 805, width: 260, height: 170 }
+    type: text
+    body:
+      paragraphs:
+        - align: right
+          runs:
+            - { text: "Intención de diseño\nno resultado medido.", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 600, color: { kind: rgb, value: "#d8cdec" } }

@@ -1,0 +1,83 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background: { kind: solid, color: { kind: rgb, value: "#1a0a2e" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+assets:
+  home: { src: "assets/home.png", mimeType: "image/png" }
+  pomodoro: { src: "assets/pomodoro.png", mimeType: "image/png" }
+  misiones: { src: "assets/misiones.png", mimeType: "image/png" }
+elements:
+  - id: label
+    frame: { x: 135, y: 95, width: 670, height: 42 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "05  /  EL RECORRIDO", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#c6b1ff" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 135, y: 150, width: 1050, height: 210 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Un ritual breve para avanzar.", font: { kind: family, family: "Space Grotesk" }, sizePt: 42, weight: 700, color: { kind: rgb, value: "#f7f2ff" } }
+  - id: caption
+    frame: { x: 138, y: 375, width: 1040, height: 100 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "La app acompaña la secuencia; la persona decide qué registrar.", font: { kind: family, family: "DM Sans" }, sizePt: 20, weight: 500, color: { kind: rgb, value: "#d8cdec" } }
+  - id: phone1
+    frame: { x: 170, y: 560, width: 285, height: 420 }
+    type: image
+    assetId: home
+    fit: contain
+    altText: "Captura de la pantalla de inicio de TD-App con resumen de TD-Coins, Pomodoros y misiones"
+  - id: phone2
+    frame: { x: 660, y: 560, width: 285, height: 420 }
+    type: image
+    assetId: pomodoro
+    fit: contain
+    altText: "Captura del temporizador Pomodoro de 25 minutos de TD-App"
+  - id: phone3
+    frame: { x: 1150, y: 560, width: 285, height: 420 }
+    type: image
+    assetId: misiones
+    fit: contain
+    altText: "Captura de misiones de TD-App con pasos y progreso manual"
+  - id: step1
+    frame: { x: 115, y: 485, width: 400, height: 82 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "1  Elige una tarea", font: { kind: family, family: "DM Sans" }, sizePt: 17, weight: 700, color: { kind: rgb, value: "#62ddca" }, letterSpacingPt: 1 }
+  - id: step2
+    frame: { x: 605, y: 485, width: 400, height: 82 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "2  Enfoca y descansa", font: { kind: family, family: "DM Sans" }, sizePt: 17, weight: 700, color: { kind: rgb, value: "#f7ba67" }, letterSpacingPt: 1 }
+  - id: step3
+    frame: { x: 1095, y: 485, width: 500, height: 82 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "3  Marca manualmente el avance de la misión", font: { kind: family, family: "DM Sans" }, sizePt: 17, weight: 700, color: { kind: rgb, value: "#f2a5d1" }, letterSpacingPt: 0 }
+  - id: note
+    frame: { x: 1440, y: 560, width: 360, height: 390 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 28 }
+    fill: { kind: solid, color: { kind: rgb, value: "#7c3aed" } }
+    body:
+      verticalAlign: middle
+      paragraphs:
+        - align: center
+          runs:
+            - { text: "Las TD-Coins se reciben al completar un Pomodoro de trabajo.\nLas misiones se registran por separado.", font: { kind: family, family: "Space Grotesk" }, sizePt: 20, weight: 600, color: { kind: rgb, value: "#f7f2ff" } }

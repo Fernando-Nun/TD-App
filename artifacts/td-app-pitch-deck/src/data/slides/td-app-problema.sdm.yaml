@@ -1,0 +1,73 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background: { kind: solid, color: { kind: rgb, value: "#1a0a2e" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+elements:
+  - id: accent
+    frame: { x: 0, y: 0, width: 410, height: 1080 }
+    type: shape
+    geometry: { kind: preset, preset: rectangle }
+    fill: { kind: solid, color: { kind: rgb, value: "#7c3aed" } }
+  - id: label
+    frame: { x: 150, y: 120, width: 700, height: 50 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "02  /  EL PUNTO DE PARTIDA", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#c6b1ff" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 150, y: 220, width: 820, height: 346 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Cuando todo se acumula,\nempezar cuesta.", font: { kind: family, family: "Space Grotesk" }, sizePt: 48, weight: 700, color: { kind: rgb, value: "#f7f2ff" } }
+  - id: intro
+    frame: { x: 150, y: 600, width: 790, height: 180 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "No siempre falta voluntad. A veces falta un primer paso que se sienta posible.", font: { kind: family, family: "DM Sans" }, sizePt: 23, weight: 500, color: { kind: rgb, value: "#d8cdec" } }
+  - id: card1
+    frame: { x: 1070, y: 170, width: 610, height: 260 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 24 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f7f2ff" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "01", font: { kind: family, family: "Space Grotesk" }, sizePt: 25, weight: 700, color: { kind: rgb, value: "#7c3aed" } }
+        - runs:
+            - { text: "Muchas tareas abiertas", font: { kind: family, family: "DM Sans" }, sizePt: 26, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "La lista crece y pierde orden.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#655b76" } }
+  - id: card2
+    frame: { x: 1070, y: 465, width: 610, height: 290 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 24 }
+    fill: { kind: solid, color: { kind: rgb, value: "#c6b1ff" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "02", font: { kind: family, family: "Space Grotesk" }, sizePt: 25, weight: 700, color: { kind: rgb, value: "#7c3aed" } }
+        - runs:
+            - { text: "El inicio se siente enorme", font: { kind: family, family: "DM Sans" }, sizePt: 26, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "La primera decisión ya consume energía.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#4c3862" } }
+  - id: card3
+    frame: { x: 1070, y: 760, width: 610, height: 290 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 24 }
+    fill: { kind: solid, color: { kind: rgb, value: "#62ddca" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "03", font: { kind: family, family: "Space Grotesk" }, sizePt: 25, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Lo que sí se hizo queda oculto", font: { kind: family, family: "DM Sans" }, sizePt: 26, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Sin una señal visible, avanzar parece no contar.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#284f4b" } }

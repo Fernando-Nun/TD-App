@@ -1,0 +1,96 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background:
+  kind: linearGradient
+  angleDeg: 90
+  stops:
+    - { offset: 0, color: { kind: rgb, value: "#f7f2ff" } }
+    - { offset: 1, color: { kind: rgb, value: "#eee6ff" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+assets:
+  pomodoro: { src: "assets/pomodoro.png", mimeType: "image/png" }
+  misiones: { src: "assets/misiones.png", mimeType: "image/png" }
+  recompensas: { src: "assets/recompensas.png", mimeType: "image/png" }
+elements:
+  - id: label
+    frame: { x: 145, y: 110, width: 700, height: 45 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "06  /  LAS PIEZAS", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 145, y: 190, width: 1050, height: 240 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Lo esencial, en un solo lugar.", font: { kind: family, family: "Space Grotesk" }, sizePt: 49, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+  - id: intro
+    frame: { x: 150, y: 450, width: 760, height: 110 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Cada función responde a un momento distinto del día.", font: { kind: family, family: "DM Sans" }, sizePt: 22, color: { kind: rgb, value: "#655b76" } }
+  - id: f1
+    frame: { x: 100, y: 650, width: 350, height: 250 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 26 }
+    fill: { kind: solid, color: { kind: rgb, value: "#c6b1ff" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "ENFOCAR", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Pomodoro", font: { kind: family, family: "Space Grotesk" }, sizePt: 32, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Bloques de trabajo\ny descanso.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#4c3862" } }
+  - id: f2
+    frame: { x: 550, y: 650, width: 350, height: 250 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 26 }
+    fill: { kind: solid, color: { kind: rgb, value: "#62ddca" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "ORDENAR", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#1a0a2e" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Misiones", font: { kind: family, family: "Space Grotesk" }, sizePt: 32, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Metas grandes,\npasos concretos.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#284f4b" } }
+  - id: f3
+    frame: { x: 1000, y: 650, width: 350, height: 250 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 26 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f2a5d1" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "REFLEXIONAR", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Notas", font: { kind: family, family: "Space Grotesk" }, sizePt: 32, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Por voz o texto,\nsegún el momento.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#4c3862" } }
+  - id: f4
+    frame: { x: 1380, y: 650, width: 420, height: 250 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 26 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f7ba67" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "SOSTENER", font: { kind: family, family: "DM Sans" }, sizePt: 15, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 2 }
+        - runs:
+            - { text: "Recordatorios", font: { kind: family, family: "Space Grotesk" }, sizePt: 28, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "TD-Coins:\nrecompensa visual,\nno comercio.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#5f4320" } }
+  - id: strip
+    frame: { x: 1470, y: 105, width: 300, height: 480 }
+    type: image
+    assetId: recompensas
+    fit: contain
+    altText: "Captura de recompensas visuales de TD-App con saldo de TD-Coins"

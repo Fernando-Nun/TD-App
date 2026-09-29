@@ -1,0 +1,73 @@
+format: replit.sdm
+version: 1
+size: { width: 1920, height: 1080 }
+background: { kind: solid, color: { kind: rgb, value: "#f7f2ff" } }
+theme:
+  colors: { tinta: "#1a0a2e", morado: "#7c3aed", lila: "#c6b1ff", turquesa: "#62ddca", rosa: "#f2a5d1", ambar: "#f7ba67", crema: "#f7f2ff" }
+  fonts: { display: "Space Grotesk", body: "DM Sans" }
+elements:
+  - id: label
+    frame: { x: 145, y: 120, width: 700, height: 45 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "04  /  LA PROPUESTA", font: { kind: family, family: "DM Sans" }, sizePt: 16, weight: 700, color: { kind: rgb, value: "#7c3aed" }, letterSpacingPt: 3 }
+  - id: title
+    frame: { x: 145, y: 210, width: 820, height: 340 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Hacer visible\nel siguiente paso.", font: { kind: family, family: "Space Grotesk" }, sizePt: 46, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+  - id: intro
+    frame: { x: 150, y: 570, width: 750, height: 170 }
+    type: text
+    body:
+      paragraphs:
+        - runs:
+            - { text: "Una experiencia breve para pasar de la intención a una acción concreta.", font: { kind: family, family: "DM Sans" }, sizePt: 22, weight: 500, color: { kind: rgb, value: "#655b76" } }
+  - id: step1
+    frame: { x: 1080, y: 150, width: 570, height: 190 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 28 }
+    fill: { kind: solid, color: { kind: rgb, value: "#c6b1ff" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "01", font: { kind: family, family: "Space Grotesk" }, sizePt: 30, weight: 700, color: { kind: rgb, value: "#7c3aed" } }
+        - runs:
+            - { text: "Elegir", font: { kind: family, family: "Space Grotesk" }, sizePt: 29, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Una tarea, no todo el día.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#4c3862" } }
+  - id: step2
+    frame: { x: 1170, y: 415, width: 570, height: 240 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 28 }
+    fill: { kind: solid, color: { kind: rgb, value: "#62ddca" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "02", font: { kind: family, family: "Space Grotesk" }, sizePt: 30, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Enfocar", font: { kind: family, family: "Space Grotesk" }, sizePt: 29, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Un bloque de atención con Pomodoro.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#284f4b" } }
+  - id: step3
+    frame: { x: 1080, y: 700, width: 570, height: 240 }
+    type: shape
+    geometry: { kind: preset, preset: roundRect, cornerRadius: 28 }
+    fill: { kind: solid, color: { kind: rgb, value: "#f2a5d1" } }
+    body:
+      paragraphs:
+        - runs:
+            - { text: "03", font: { kind: family, family: "Space Grotesk" }, sizePt: 30, weight: 700, color: { kind: rgb, value: "#7c3aed" } }
+        - runs:
+            - { text: "Registrar", font: { kind: family, family: "Space Grotesk" }, sizePt: 29, weight: 700, color: { kind: rgb, value: "#1a0a2e" } }
+        - runs:
+            - { text: "Reconocer manualmente lo que avanzó.", font: { kind: family, family: "DM Sans" }, sizePt: 18, color: { kind: rgb, value: "#4c3862" } }
+  - id: connector
+    frame: { x: 1030, y: 330, width: 70, height: 540 }
+    type: line
+    points: [{ x: 35, y: 0 }, { x: 35, y: 540 }]
+    stroke: { color: { kind: rgb, value: "#7c3aed" }, widthPt: 2, dash: dash, cap: round }

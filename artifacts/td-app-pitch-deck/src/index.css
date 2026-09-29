@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import 'tailwindcss';
 
 @theme inline {
@@ -11,14 +12,13 @@
 }
 
 :root {
-  /* Replace these with brand colors */
-  --slide-primary: #4f46e5;
-  --slide-accent: #06b6d4;
-  --slide-bg: #f8fafc;
-  --slide-text: #0f172a;
-  --slide-muted: #64748b;
-  --font-display-family: 'Inter', system-ui, sans-serif;
-  --font-body-family: 'Inter', system-ui, sans-serif;
+  --slide-primary: #7c3aed;
+  --slide-accent: #62ddca;
+  --slide-bg: #f7f2ff;
+  --slide-text: #1a0a2e;
+  --slide-muted: #655b76;
+  --font-display-family: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --font-body-family: 'DM Sans', ui-sans-serif, sans-serif;
   color-scheme: light;
 }
 

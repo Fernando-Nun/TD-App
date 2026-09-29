@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "id": "td-app-cover",
+    "position": 1,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-cover.sdm.yaml",
+    "title": "TD-App",
+    "description": "Pequeños pasos. Avances visibles.",
+    "speakerNotes": "Presentar TD-App como un acompañante cercano para avanzar sin juicio: una tarea clara, un paso posible."
+  },
+  {
+    "id": "td-app-problema",
+    "position": 2,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-problema.sdm.yaml",
+    "title": "El problema",
+    "description": "Cuando todo parece urgente, empezar se vuelve difícil.",
+    "speakerNotes": "Hablar de la fricción cotidiana: acumular, no saber por dónde comenzar y no ver lo que sí se hizo."
+  },
+  {
+    "id": "td-app-publico",
+    "position": 3,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-publico.sdm.yaml",
+    "title": "Para quién",
+    "description": "Personas que buscan estructura y apoyo para organizar su atención.",
+    "speakerNotes": "Aclarar que incluye a algunas personas con TDAH, sin ser diagnóstico ni tratamiento."
+  },
+  {
+    "id": "td-app-propuesta",
+    "position": 4,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-propuesta.sdm.yaml",
+    "title": "La propuesta",
+    "description": "Convertir metas grandes en siguientes pasos claros.",
+    "speakerNotes": "Explicar la propuesta en tres verbos: elegir, enfocar y registrar."
+  },
+  {
+    "id": "td-app-recorrido",
+    "position": 5,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-recorrido.sdm.yaml",
+    "title": "Un recorrido simple",
+    "description": "De una tarea elegida a un avance que se puede reconocer.",
+    "speakerNotes": "Recorrer la secuencia. Subrayar que el Pomodoro es un bloque de enfoque; el avance de la misión se registra manualmente."
+  },
+  {
+    "id": "td-app-funciones",
+    "position": 6,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-funciones.sdm.yaml",
+    "title": "Las piezas que acompañan",
+    "description": "Enfoque, misiones, notas, recordatorios y recompensas visuales.",
+    "speakerNotes": "Mostrar las funciones como piezas de un mismo acompañamiento, no como una lista técnica."
+  },
+  {
+    "id": "td-app-valor",
+    "position": 7,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-valor.sdm.yaml",
+    "title": "El valor que buscamos",
+    "description": "Menos fricción para empezar. Más claridad para seguir.",
+    "speakerNotes": "Presentar estas ideas como intención de diseño, no como resultados medidos."
+  },
+  {
+    "id": "td-app-cierre",
+    "position": 8,
+    "kind": "sdm",
+    "filepath": "src/data/slides/td-app-cierre.sdm.yaml",
+    "title": "El siguiente paso",
+    "description": "Validar con usuarios reales antes de seguir creciendo.",
+    "speakerNotes": "Cerrar con honestidad: la validación con usuarios reales es el próximo paso aún por realizar."
+  }
+]
