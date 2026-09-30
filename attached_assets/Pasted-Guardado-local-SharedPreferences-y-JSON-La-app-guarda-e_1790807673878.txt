@@ -1,0 +1,51 @@
+Guardado local: SharedPreferences y JSON
+•	La app guarda en el teléfono un resumen de su estado, llamado snapshot. Contiene, por ejemplo, las monedas, el progreso de misiones, los Pomodoros terminados, la racha, las notas de voz y las compras.
+•	Ese resumen se convierte a JSON y se guarda en SharedPreferences, el almacenamiento de Android pensado para valores sencillos.
+•	El estado se guarda al cambiar; no depende de que la persona cierre la aplicación.
+•	También se guardan aparte las preferencias de los recordatorios.
+Una forma precisa de explicar la decisión:
+TD-App guarda el progreso local como un resumen JSON en SharedPreferences. Actualmente, la aplicación carga y guarda el estado completo, y no necesita hacer consultas complejas entre muchos datos en el teléfono. Room sería una mejor opción si se necesitaran búsquedas y filtros avanzados, relaciones entre muchos registros o un historial local mucho mayor. No significa que SharedPreferences sea mejor para todos los casos: depende de cómo se usan los datos.
+
+Como se sincronizan los datos
+El servidor toma el JSON que ya tiene, lo combina con el que envía la app y guarda el resultado actualizado. Las misiones con el mismo identificador se reconocen como la misma misión, así que no se duplican; las nuevas se incorporan. No compara solo el texto: dos tareas con el mismo nombre pero identificadores distintos seguirán siendo tareas separadas.
+Puedes anotarlo así:
+Al sincronizar, el servidor combina el resumen JSON recibido con el que ya está guardado y luego actualiza ese resumen. Los elementos con el mismo identificador se reconocen y se combinan para evitar duplicados; los elementos nuevos se agregan.
+Paso a paso desde cero:
+Lee el JSON existente, lo combina con los datos recibidos y guarda el resultado actualizado en el mismo registro de la cuenta. En ese sentido, el valor anterior se reemplaza, pero por una versión ya fusionada, no por los datos entrantes sin revisar.
+La frase más precisa sería: “La sincronización combina el JSON actual con los cambios recibidos y guarda el JSON resultante actualizado.”
+
+Ruta de sincronización de TD-App
+1.	La app guarda los cambios localmente. Cuando se crea o modifica una misión, el estado actualizado se guarda en el teléfono como un resumen JSON.
+2.	La app intenta sincronizarse si hay una sesión iniciada. En el código, hace una solicitud inmediata y vuelve a intentarlo periódicamente.
+3.	SyncClient prepara la solicitud. Envía un POST a https://td-app.replit.app/api/sync —salvo que la URL se haya cambiado al compilar— con:
+•	un token de sesión en la cabecera Authorization: Bearer …;
+•	el identificador de la operación y del dispositivo;
+•	el resumen JSON completo del progreso, no solo las tareas nuevas.
+4.	HTTPS lleva la solicitud al servidor. El dominio es la dirección de entrada: la conexión segura llega al servicio que ejecuta la API, y la ruta /api/sync identifica qué operación debe atender.
+5.	La API valida la sesión y procesa la solicitud. El servidor no conecta el teléfono directamente a PostgreSQL: es la API la que accede a la base de datos.
+6.	El servidor combina los datos. Lee el resumen guardado para esa cuenta y lo combina con el recibido. Los identificadores ayudan a reconocer los mismos elementos y evitar duplicarlos; una operación ya procesada tampoco se aplica de nuevo.
+7.	PostgreSQL guarda el resultado combinado. El servidor actualiza el resumen JSON de la cuenta dentro de una transacción y devuelve el estado actualizado.
+8.	La app recibe la respuesta. Combina ese estado con el local, lo vuelve a guardar en el teléfono y actualiza el estado de sincronización.
+Aclaración: dos tareas con el mismo nombre pero identificadores distintos se consideran tareas diferentes.
+Versión breve para tus apuntes:
+TD-App guarda primero el progreso en el teléfono. Cuando sincroniza, envía por HTTPS el resumen JSON a la ruta /api/sync, junto con la sesión y los identificadores de operación y dispositivo. La API valida la solicitud, combina el resumen recibido con el guardado en PostgreSQL para evitar duplicar elementos con el mismo identificador y devuelve el resultado actualizado a la app.
+
+
+
+¿Por que no se usa DAO?
+TD-App no usa un DAO de Room: no hay interfaces @Dao, entidades ni consultas SQL; el estado se guarda como JSON en SharedPreferences.
+
+Tamaños de los botones
+•	En el formulario de acceso, los botones principales —como Iniciar sesión— miden 54 dp de alto y ocupan el ancho disponible. Los botones secundarios delineados miden 52 dp de alto. Ambos usan esquinas redondeadas de 16 dp.
+•	El botón circular para empezar o pausar el Pomodoro mide 78 × 78 dp. Los controles circulares de reinicio y cambio de modo miden 48 × 48 dp.
+•	El botón para iniciar el dictado por voz mide 80 × 80 dp.
+•	El botón para abrir el plan personalizado mide 54 dp de alto y ocupa el ancho disponible.
+•	El botón Canjear de cada producto mide 32 dp de alto; su ancho depende del texto y del espacio disponible.
+•	En la navegación inferior, el modificador del botón de cada sección fija su contenedor en 34 × 34 dp. El icono mide 25 dp en la sección activa y 21 dp en las inactivas.
+•	No todos los botones tienen un tamaño fijo: varios usan las dimensiones predeterminadas de Material 3 y se ajustan a su contenido y espacio.
+Duración de las animaciones y otros efectos temporizados
+•	Logo y resplandor de la pantalla de carga: cada movimiento tarda 1.6 segundos en ir de un extremo al otro y luego vuelve en sentido contrario. Un ciclo completo de ida y vuelta dura 3.2 segundos.
+•	Rotación del elemento orbital: tarda 7 segundos por vuelta y vuelve a comenzar.
+•	Barra de carga: completa un ciclo visual cada 1.5 segundos.
+•	Puntos de carga: repiten su movimiento cada 1.1 segundos.
+•	Cambio entre pantallas de acceso y registro: combina un deslizamiento horizontal y un fundido. El código no fija una duración en milisegundos; usa la configuración predeterminada de Compose.
