@@ -289,4 +289,4 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
         AppNotifications.updateSchedule(context)
         PomodoroAlarm.restore(context)
     }
-}
+}
