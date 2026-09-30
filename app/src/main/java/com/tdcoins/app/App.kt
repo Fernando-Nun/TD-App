@@ -131,11 +131,13 @@ private fun TDCoinsContent(
     var voiceNotes by remember { mutableStateOf(initial.voiceNotes) }
     var economyEvents by remember { mutableStateOf(initial.economyEvents) }
     var syncStatus by remember { mutableStateOf("Sincronizando…") }
-    var pomodoroIsWork by rememberSaveable { mutableStateOf(true) }
-    var pomodoroSeconds by rememberSaveable { mutableIntStateOf(25 * 60) }
-    var pomodoroRunning by rememberSaveable { mutableStateOf(false) }
+    val pomodoroPreferences = remember { PomodoroPreferences(context) }
+    val savedPomodoro = remember { pomodoroPreferences.load() }
+    var pomodoroIsWork by rememberSaveable { mutableStateOf(savedPomodoro.isWork) }
+    var pomodoroSeconds by rememberSaveable { mutableIntStateOf(savedPomodoro.seconds) }
+    var pomodoroRunning by rememberSaveable { mutableStateOf(savedPomodoro.running) }
     var pomodoroSessions by rememberSaveable { mutableIntStateOf(0) }
-    var pomodoroDeadline by rememberSaveable { mutableLongStateOf(0L) }
+    var pomodoroDeadline by rememberSaveable { mutableLongStateOf(savedPomodoro.deadline) }
     var showPomodoroCelebration by rememberSaveable { mutableStateOf(false) }
     val reminderPreferences = remember { ReminderPreferences(context) }
     var reminderSettings by remember { mutableStateOf(reminderPreferences.load()) }
@@ -251,22 +253,24 @@ private fun TDCoinsContent(
                     pomodorosDone += 1
                     addCoins(10, "pomodoro-${UUID.randomUUID()}")
                     registerActivity()
-                    AppNotifications.showProgress(
-                        context,
-                        "¡Pomodoro completado!",
-                        "Ganaste 10 TD-Coins. Tu racha es de $streakDays día(s).",
-                    )
+                    // La notificación la envía PomodoroAlarmReceiver, programado al iniciar el bloque.
                     showPomodoroCelebration = true
                     pomodoroIsWork = false
-                    pomodoroSeconds = 5 * 60
+                    pomodoroSeconds = POMODORO_BREAK_SECONDS
                 } else {
                     pomodoroIsWork = true
-                    pomodoroSeconds = 25 * 60
+                    pomodoroSeconds = POMODORO_WORK_SECONDS
                 }
             } else {
                 delay(250)
             }
         }
+    }
+
+    LaunchedEffect(pomodoroIsWork, pomodoroRunning, pomodoroDeadline, pomodoroSeconds.takeUnless { pomodoroRunning }) {
+        pomodoroPreferences.save(
+            PomodoroTimerState(pomodoroIsWork, pomodoroSeconds, pomodoroRunning, pomodoroDeadline),
+        )
     }
 
     LaunchedEffect(showPomodoroCelebration) {
@@ -338,21 +342,32 @@ private fun TDCoinsContent(
                             pomodoroSeconds = ceil(millisLeft / 1000.0).toInt().coerceAtLeast(0)
                             pomodoroRunning = false
                             pomodoroDeadline = 0L
+                            PomodoroAlarm.cancel(context)
                         } else {
                             pomodoroDeadline = System.currentTimeMillis() + pomodoroSeconds * 1000L
                             pomodoroRunning = true
+                            PomodoroAlarm.schedule(context, pomodoroIsWork, pomodoroDeadline)
+                            if (
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                !AppNotifications.notificationsAllowed(context)
+                            ) {
+                                enableRemindersAfterPermission = false
+                                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
                         }
                     },
                     onReset = {
                         pomodoroRunning = false
                         pomodoroDeadline = 0L
-                        pomodoroSeconds = if (pomodoroIsWork) 25 * 60 else 5 * 60
+                        PomodoroAlarm.cancel(context)
+                        pomodoroSeconds = if (pomodoroIsWork) POMODORO_WORK_SECONDS else POMODORO_BREAK_SECONDS
                     },
                     onSwitchMode = {
                         pomodoroRunning = false
                         pomodoroDeadline = 0L
+                        PomodoroAlarm.cancel(context)
                         pomodoroIsWork = !pomodoroIsWork
-                        pomodoroSeconds = if (pomodoroIsWork) 25 * 60 else 5 * 60
+                        pomodoroSeconds = if (pomodoroIsWork) POMODORO_WORK_SECONDS else POMODORO_BREAK_SECONDS
                     },
                 )
                 AppTab.MISSIONS -> MissionsScreen(

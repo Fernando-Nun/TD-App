@@ -94,6 +94,8 @@ object AppNotifications {
     const val EXTRA_DESTINATION = "notification_destination"
     private const val PROGRESS_CHANNEL_ID = "progress"
     private const val REMINDER_CHANNEL_ID = "daily_reminders"
+    private const val POMODORO_CHANNEL_ID = "pomodoro_timer"
+    private const val POMODORO_NOTIFICATION_ID = 8200
     private const val ALARM_REQUEST_CODE = 7301
 
     fun createChannels(context: Context) {
@@ -117,6 +119,15 @@ object AppNotifications {
                     description = "Avisos configurables para enfoque, misiones y rachas"
                 },
             )
+            manager.createNotificationChannel(
+                NotificationChannel(
+                    POMODORO_CHANNEL_ID,
+                    "Temporizador Pomodoro",
+                    NotificationManager.IMPORTANCE_HIGH,
+                ).apply {
+                    description = "Aviso al terminar cada bloque de enfoque o descanso"
+                },
+            )
         }
     }
 
@@ -135,6 +146,28 @@ object AppNotifications {
 
     fun showDailyReminder(context: Context, type: ReminderType) {
         show(context, REMINDER_CHANNEL_ID, type.title, type.message, type.destination, 8100 + type.ordinal)
+    }
+
+    fun showPomodoroFinished(context: Context, wasWork: Boolean) {
+        if (wasWork) {
+            show(
+                context,
+                POMODORO_CHANNEL_ID,
+                "¡Pomodoro completado!",
+                "Ganaste 10 TD-Coins. Tómate 5 minutos de descanso.",
+                AppTab.POMODORO,
+                POMODORO_NOTIFICATION_ID,
+            )
+        } else {
+            show(
+                context,
+                POMODORO_CHANNEL_ID,
+                "Descanso terminado",
+                "Es hora de volver a enfocarte. Inicia tu siguiente Pomodoro.",
+                AppTab.POMODORO,
+                POMODORO_NOTIFICATION_ID,
+            )
+        }
     }
 
     fun notificationsAllowed(context: Context): Boolean =
@@ -254,5 +287,6 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         AppNotifications.createChannels(context)
         AppNotifications.updateSchedule(context)
+        PomodoroAlarm.restore(context)
     }
 }
